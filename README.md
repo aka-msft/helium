@@ -1,3 +1,6 @@
+# Helium - WORK IN PROGRESS
+
+A reference app for using the Azure Web App for Containers service.
 
 # Contributing
 
