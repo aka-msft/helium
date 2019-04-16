@@ -4,8 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install
+RUN chmod +x ./scripts/start-service.sh \
+    && npm install
 
-EXPOSE 80
+EXPOSE 8080
 
-CMD [ "./scripts/start-service.sh" ]
+ENTRYPOINT [ "bash", "-c", "./scripts/start-service.sh" ]

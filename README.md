@@ -15,3 +15,33 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Development
+
+### Install dependencies
+
+```
+npm install
+```
+
+### Transpile to JS
+
+```
+npm run build
+```
+
+### Run dev server
+
+```
+npm start
+```
+
+### Docker
+
+```
+npm run docker-build
+```
+
+```
+npm run docker-run
+```
