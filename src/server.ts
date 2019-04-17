@@ -1,14 +1,29 @@
-var restify = require('restify');
+import * as routes from "./app/routes/movie"
+import * as restify from 'restify';
+import * as bodyParser from 'body-parser';
 
-function respond(req, res, next) {
-  res.send('hello ' + req.params.name);
-  next();
-}
+const port = process.env.PORT || 3000;
 
-var server = restify.createServer();
-server.get('/hello/:name', respond);
-server.head('/hello/:name', respond);
+// create restify server
+const server = restify.createServer();
 
-server.listen(8080, function() {
-  console.log('%s listening at %s', server.name, server.url);
+// parse requests of content-type - application/x-www-form-urlencoded
+server.use(bodyParser.urlencoded({ extended: true }))
+
+// parse requests of content-type - application/json
+server.use(bodyParser.json())
+
+// define a simple route
+server.get('/', (req, res) => {
+    res.json({"message": "Welcome to the MovieInfo reference application."});
 });
+
+routes.registerRoutes(server);
+
+// listen for requests
+server.listen(port, () => {
+    console.log("Server is listening on port 3000");
+});
+
+// Debugging:
+// console.dir(server.router)
