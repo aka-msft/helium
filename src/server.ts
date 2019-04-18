@@ -1,4 +1,5 @@
-import * as routes from "./app/routes/movie"
+import * as movieRoutes from "./app/routes/movie"
+import * as systemRoutes from "./app/routes/system"
 import * as restify from 'restify';
 import * as bodyParser from 'body-parser';
 
@@ -18,7 +19,8 @@ server.get('/', (req, res) => {
     res.json({"message": "Welcome to the MovieInfo reference application."});
 });
 
-routes.registerRoutes(server);
+systemRoutes.registerRoutes(server);
+movieRoutes.registerRoutes(server);
 
 // listen for requests
 server.listen(port, () => {
