@@ -25,8 +25,12 @@
   "homepage": "https://github.com/Microsoft/helium#readme",
   "dependencies": {
     "@types/body-parser": "^1.17.0",
+    "@types/documentdb": "^1.10.5",
     "@types/restify": "^7.2.9",
+    "azure-keyvault": "^3.0.4",
     "body-parser": "^1.18.3",
+    "documentdb": "^1.15.3",
+    "ms-rest-azure": "^2.6.0",
     "restify": "^8.3.0",
     "restify-errors": "^7.0.0",
     "restify-plugins": "^1.6.0",

@@ -10,6 +10,7 @@ const server = restify.createServer();
 
 // parse requests of content-type - application/x-www-form-urlencoded
 server.use(bodyParser.urlencoded({ extended: true }))
+server.use(restify.plugins.queryParser({ mapParams: false }));
 
 // parse requests of content-type - application/json
 server.use(bodyParser.json())

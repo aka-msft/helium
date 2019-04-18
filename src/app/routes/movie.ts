@@ -12,7 +12,7 @@ export function registerRoutes (app) {
     app.get(apiPrefix + '/movies', movies.getAll);
 
     // Create a movie
-    app.post(apiPrefix + '/movies/:name', movies.createMovie);
+    app.post(apiPrefix + '/movies', movies.createMovie);
 
     // Retrieve a single movie by id
     app.get(apiPrefix + '/movies/:id', movies.getMovieById);
