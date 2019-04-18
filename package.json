@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node dist/server.js",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "test": "mocha --reporter spec --compilers ts:ts-node/register 'tests/**/*test*.ts'",
     "build": "gulp scripts",
     "docker-build": "docker build -t helium:canary .",
@@ -45,6 +46,7 @@
     "chai-http": "^3.0.0",
     "gulp": "^3.9.1",
     "gulp-typescript": "^3.1.1",
-    "mocha": "^3.1.2"
+    "mocha": "^3.1.2",
+    "tslint": "^5.16.0"
   }
 }

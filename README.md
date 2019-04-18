@@ -36,6 +36,12 @@ npm run build
 npm start
 ```
 
+### Lint
+
+```
+npm run lint
+```
+
 ### Docker
 
 ```
