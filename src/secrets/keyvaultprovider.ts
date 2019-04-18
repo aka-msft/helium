@@ -1,16 +1,16 @@
-import * as msrestazure from "ms-rest-azure";
 import * as keyvault from "azure-keyvault";
+import * as msrestazure from "ms-rest-azure";
 
 /**
  * Handles accessing secrets from Azure Key vault.
  */
 export class KeyVaultProvider {
-    private _client: keyvault.KeyVaultClient;
+    private client: keyvault.KeyVaultClient;
 
-    private _url: string;
-    private _clientId: string;
-    private _clientSecret: string
-    private _tenantId: string
+    private url: string;
+    private clientId: string;
+    private clientSecret: string;
+    private tenantId: string;
 
     /**
      * Creates a new instance of the KeyVaultProvider class.
@@ -20,43 +20,43 @@ export class KeyVaultProvider {
      * @param tenantId The id of the tenant that the service principal is a member of.
      */
     constructor(url: string, clientId: string, clientSecret: string, tenantId: string) {
-        this._url = url;
-        this._clientId = clientId;
-        this._clientSecret = clientSecret;
-        this._tenantId = tenantId;
+        this.url = url;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.tenantId = tenantId;
     }
 
     /**
      * Returns the latest version of the names secret.
      * @param name The name of the secret.
      */
-    async getSecret(name: string): Promise<string> {
+    public async getSecret(name: string): Promise<string> {
 
-        if (this._client == null) {
+        if (this.client == null) {
             await this._initialize();
         }
-  
+
         // An empty string for 'secretVersion' returns the latest version
-        let secret = await this._client.getSecret(this._url, name, "")
-            .then(secret => { return <string>(secret.value); })
-            .catch(_ => {
+        const secret = await this.client.getSecret(this.url, name, "")
+            .then((s) =>  (s.value) as string)
+            .catch((_) => {
                 throw new Error(`Unable to find secret ${name}`);
             });
-  
-      return secret;
+
+        return secret;
     }
 
     /**
-     * Initialized the KeyVault client. 
+     * Initialized the KeyVault client.
      * This is handled in a separate method to avoid calling async operations in the constructor.
      */
     private async _initialize() {
 
         // TODO (seusher): Validate MSI works with App Service containers
-        let creds = this._clientId == undefined || this._clientId == "" ? 
-                    await msrestazure.loginWithMSI(): 
-                    await msrestazure.loginWithServicePrincipalSecret(this._clientId, this._clientSecret, this._tenantId);
+        const creds = this.clientId === undefined || this.clientId === "" ?
+                    await msrestazure.loginWithMSI() :
+                    await msrestazure.loginWithServicePrincipalSecret(this.clientId, this.clientSecret, this.tenantId);
 
-        this._client = new keyvault.KeyVaultClient(creds);
+        this.client = new keyvault.KeyVaultClient(creds);
     }
 }

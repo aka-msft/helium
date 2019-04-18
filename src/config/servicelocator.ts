@@ -1,5 +1,5 @@
-import { KeyVaultProvider } from "../secrets/keyvaultprovider";
 import { CosmosDBProvider } from "../db/cosmosdbprovider";
+import { KeyVaultProvider } from "../secrets/keyvaultprovider";
 
 /**
  * A service locator to avoid a refactor for dependency injection using InverisfyJS.
@@ -7,10 +7,37 @@ import { CosmosDBProvider } from "../db/cosmosdbprovider";
  */
 export class ServiceLocator {
 
-    private static _instance: ServiceLocator;
+    /**
+     * Returns an instance of the ServiceLocator class
+     */
+    public static async getInstance(): Promise<ServiceLocator> {
 
-    private _keyvault: KeyVaultProvider;
-    private _cosmostDB: CosmosDBProvider;
+        if (ServiceLocator.instance === undefined) {
+            const locator = new ServiceLocator();
+
+            const clientId = process.env.CLIENT_ID;
+            const clientSecret = process.env.CLIENT_SECRET;
+            const tenantId = process.env.TENANT_ID;
+
+            const keyVaultUrl = process.env.KEY_VAULT_URL;
+            locator.keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId);
+
+            const cosmosDbUrl = process.env.COSMOSDB_URL;
+            const cosmosDbKey = await locator.keyvault.getSecret("cosmosDBkey");
+
+            const cosmosdb = new CosmosDBProvider(cosmosDbUrl, cosmosDbKey);
+            locator.cosmosDB = cosmosdb;
+
+            ServiceLocator.instance = locator;
+        }
+
+        return ServiceLocator.instance;
+    }
+
+    private static instance: ServiceLocator;
+
+    private keyvault: KeyVaultProvider;
+    private cosmosDB: CosmosDBProvider;
 
     /**
      * Private constructor to force initialization through getInstance
@@ -21,42 +48,14 @@ export class ServiceLocator {
     /**
      * Returns an instance of the KeyVaultProvider
      */
-    getKeyVault(): KeyVaultProvider {
-        return ServiceLocator._instance._keyvault;
+    public getKeyVault(): KeyVaultProvider {
+        return ServiceLocator.instance.keyvault;
     }
 
     /**
      * Returns an instance of the CosmosDBProvider
      */
-    getCosmosDB(): CosmosDBProvider {
-        return ServiceLocator._instance._cosmostDB;
+    public getCosmosDB(): CosmosDBProvider {
+        return ServiceLocator.instance.cosmosDB;
     }
-
-    /**
-     * Returns an instance of the ServiceLocator class
-     */
-    static async getInstance(): Promise<ServiceLocator> {
-
-        if (ServiceLocator._instance == undefined) {
-            let locator = new ServiceLocator();
-
-            let clientId = process.env["CLIENT_ID"];
-            let clientSecret = process.env["CLIENT_SECRET"];
-            let tenantId = process.env["TENANT_ID"];
-
-            let keyVaultUrl = process.env["KEY_VAULT_URL"];
-            locator._keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId);
-
-            let cosmosDbUrl = process.env["COSMOSDB_URL"];
-            let cosmosDbKey = await locator._keyvault.getSecret("cosmosDBkey");
-
-            let cosmosdb = new CosmosDBProvider(cosmosDbUrl, cosmosDbKey);
-            locator._cosmostDB = cosmosdb;
-
-            ServiceLocator._instance = locator;
-        } 
-
-        return ServiceLocator._instance;
-    }
-
 }

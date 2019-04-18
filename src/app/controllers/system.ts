@@ -4,5 +4,5 @@
  */
 export function healthcheck(req, res) {
     // Stub:
-    return res.send(200, {message: 'Successfully reached healthcheck endpoint.'});
-};
+    return res.send(200, {message: "Successfully reached healthcheck endpoint."});
+}
