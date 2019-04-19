@@ -26,7 +26,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ### Build (Transpile to JS)
 
-1. `npm run build` will transpile source files from the src/ directory into a destionation directory named dist/.
+1. `npm run build` will transpile source files from the `src/` directory into a destionation directory named `dist/`.
 
 ### Test (Unit tests)
 
@@ -36,7 +36,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ### Run dev server
 
-1. `npm start` will start the server locally.  If no environment variable is provided, the application will run on the default port defined in server.ts.
+1. `npm start` will start the server locally.  If no environment variable is provided, the application will run on the default port defined in `server.ts`.
 2. Once running, the API can be accessed at each of [https://github.com/Microsoft/helium/tree/master/src/app/routes](these routes).
 
 ### Docker
