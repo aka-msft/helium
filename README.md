@@ -20,27 +20,24 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ### Install dependencies
 
-```
-npm install
-```
+1. Clone the repository
+2. Open a terminal in the local repo directory
+3. Run `npm install`
 
-### Transpile to JS
+### Build (Transpile to JS)
 
-```
-npm run build
-```
+1. `npm run build` will transpile source files from the src/ directory into a destionation directory named dist/.
+
+### Test (Unit tests)
+
+1. Create your unit test file adjacent to your source file in the `src/` directory.  Name your test as `*.test.ts`.
+2. From the project root, run `npm test` in the terminal.
+3. Output should show that your test ran.
 
 ### Run dev server
 
-```
-npm start
-```
-
-### Lint
-
-```
-npm run lint
-```
+1. `npm start` will start the server locally.  If no environment variable is provided, the application will run on the default port defined in server.ts.
+2. Once running, the API can be accessed at each of [https://github.com/Microsoft/helium/tree/master/src/app/routes](these routes).
 
 ### Docker
 
