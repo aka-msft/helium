@@ -1,4 +1,4 @@
-import {telemetryClient} from '../../server'
+import {telemetryClient} from "../../server";
 
 /**
  * Health check controller
@@ -6,6 +6,6 @@ import {telemetryClient} from '../../server'
  */
 export function healthcheck(req, res) {
     // Stub:
-    telemetryClient.trackEvent({name: "healthcheck endpoint"})
-    return res.send(200, {message: 'Successfully reached healthcheck endpoint.'});
-};
+    telemetryClient.trackEvent({name: "healthcheck endpoint"});
+    return res.send(200, {message: "Successfully reached healthcheck endpoint"});
+}

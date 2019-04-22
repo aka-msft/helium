@@ -1,6 +1,6 @@
 import { DocumentQuery } from "documentdb";
 import { ServiceLocator } from "../../config/servicelocator";
-import {telemetryClient} from '../../server'
+import {telemetryClient} from "../../server";
 
 const database = "imdb";
 const collection = "movies";
@@ -65,8 +65,7 @@ export async function createMovie(req, res) {
  */
 export async function getMovieById(req, res) {
 
-    telemetryClient.trackEvent({name: "getMovieById endpoint"}) 
-    
+    telemetryClient.trackEvent({name: "getMovieById endpoint"});
     const movieId = req.params.id;
 
     const locator = await ServiceLocator.getInstance();

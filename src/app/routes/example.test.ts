@@ -1,10 +1,10 @@
-import { expect } from 'chai';
-import 'mocha';
+import { assert } from "chai";
+import "mocha";
 
-describe('Example test', () => {
+describe("Example test", () => {
 
-  it('should output a test result', async () => {
-    console.log("test ran");
+  it("should output a test result", async () => {
+    assert.isFalse(false);
   });
 
 });

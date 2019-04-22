@@ -1,4 +1,4 @@
-import * as ApplicationInsights from 'applicationinsights';
+import * as ApplicationInsights from "applicationinsights";
 import * as bodyParser from "body-parser";
 import * as restify from "restify";
 import * as movieRoutes from "./app/routes/movie";
@@ -24,7 +24,7 @@ export const telemetryClient = ApplicationInsights.defaultClient;
 const port = process.env.PORT || 3000;
 
 // create restify server
-telemetryClient.trackEvent({name: "Server start"}); 
+telemetryClient.trackEvent({name: "Server start"});
 const server = restify.createServer();
 
 // parse requests of content-type - application/x-www-form-urlencoded
@@ -39,7 +39,7 @@ server.get("/", (req, res) => {
     res.json({message: "Welcome to the MovieInfo reference application."});
 });
 
-telemetryClient.trackEvent({name: "Registering routes"}); 
+telemetryClient.trackEvent({name: "Registering routes"});
 systemRoutes.registerRoutes(server, telemetryClient);
 movieRoutes.registerRoutes(server, telemetryClient);
 
