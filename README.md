@@ -29,13 +29,13 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 1. `npm run build` will transpile source files from the `src/` directory into a destionation directory named `dist/`.  Console output should appear as follows:
 
 ```
-aka@MININT-81A1OI6 MINGW64 /c/users/aka/repos/helium (aka/root-readme-updates)
+user@MININT-###### MINGW64 /c/users/<user>/repos/helium (<user>/<branch>)
 $ npm run build
 
-> helium@1.0.0 build C:\users\aka\repos\helium
+> helium@1.0.0 build C:\users\<user>\repos\helium
 > gulp scripts
 
-[11:28:19] Using gulpfile C:\users\aka\repos\helium\gulpfile.js
+[11:28:19] Using gulpfile C:\users\<user>\repos\helium\gulpfile.js
 [11:28:19] Starting 'scripts'...
 [11:28:21] Finished 'scripts' after 1.97 s
 ```
