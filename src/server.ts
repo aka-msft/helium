@@ -25,7 +25,7 @@ movieRoutes.registerRoutes(server);
 
 // listen for requests
 server.listen(port, () => {
-    // Add logging - console.log is not allowed.
+    console.log("Server is listening on port " + port);
 });
 
 // Debugging:
