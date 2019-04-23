@@ -1,5 +1,6 @@
 import { DocumentQuery } from "documentdb";
 import { ServiceLocator } from "../../config/servicelocator";
+import {telemetryClient} from "../../server";
 
 const database = "imdb";
 const collection = "movies";
@@ -9,6 +10,8 @@ const collection = "movies";
  *  Filter movies by name "?q=<name>"
  */
 export async function getAll(req, res) {
+
+    telemetryClient.trackEvent({name: "getAll endpoint"});
 
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
@@ -46,6 +49,8 @@ export async function getAll(req, res) {
  */
 export async function createMovie(req, res) {
 
+    telemetryClient.trackEvent({name: "createMovie endpoint"});
+
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
 
@@ -60,6 +65,7 @@ export async function createMovie(req, res) {
  */
 export async function getMovieById(req, res) {
 
+    telemetryClient.trackEvent({name: "getMovieById endpoint"});
     const movieId = req.params.id;
 
     const locator = await ServiceLocator.getInstance();
