@@ -36,8 +36,7 @@
     "restify": "^8.3.0",
     "restify-errors": "^7.0.0",
     "restify-plugins": "^1.6.0",
-    "ts-node": "^3.3.0",
-    "typescript": "^3.4.3"
+    "ts-node": "^3.3.0"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
@@ -48,6 +47,8 @@
     "gulp": "^3.9.1",
     "gulp-typescript": "^3.1.1",
     "mocha": "^3.1.2",
-    "tslint": "^5.16.0"
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.4",
+    "typescript-tslint-plugin": "^0.3.1"
   }
 }

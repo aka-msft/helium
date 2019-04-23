@@ -1,9 +1,8 @@
+import { collection, database } from "../../db/dbconstants";
 import { DocumentQuery } from "documentdb";
 import { ServiceLocator } from "../../config/servicelocator";
 import {telemetryClient} from "../../server";
 
-const database = "imdb";
-const collection = "movies";
 
 /**
  *  Retrieve and return all movies
@@ -24,7 +23,7 @@ export async function getAll(req, res) {
     if (movieName === undefined) {
         querySpec = {
             parameters: [],
-            query: "SELECT * FROM root",
+            query: "SELECT * FROM root where root.type = 'Movie'",
         };
     } else {
         querySpec = {
@@ -34,7 +33,7 @@ export async function getAll(req, res) {
                     value: movieName,
                 },
             ],
-            query: "SELECT * FROM root where CONTAINS(root.title, @title)",
+            query: "SELECT * FROM root where CONTAINS(root.title, @title) and root.type = 'Movie'",
         };
     }
 
@@ -66,6 +65,7 @@ export async function createMovie(req, res) {
 export async function getMovieById(req, res) {
 
     telemetryClient.trackEvent({name: "getMovieById endpoint"});
+
     const movieId = req.params.id;
 
     const locator = await ServiceLocator.getInstance();

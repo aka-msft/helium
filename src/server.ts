@@ -1,6 +1,7 @@
 import * as ApplicationInsights from "applicationinsights";
 import * as bodyParser from "body-parser";
 import * as restify from "restify";
+import * as genreRoutes from "./app/routes/genre";
 import * as movieRoutes from "./app/routes/movie";
 import * as systemRoutes from "./app/routes/system";
 
@@ -42,6 +43,7 @@ server.get("/", (req, res) => {
 telemetryClient.trackEvent({name: "Registering routes"});
 systemRoutes.registerRoutes(server, telemetryClient);
 movieRoutes.registerRoutes(server, telemetryClient);
+genreRoutes.registerRoutes(server, telemetryClient);
 
 // listen for requests
 telemetryClient.trackEvent({name: "Listening for requests"});
