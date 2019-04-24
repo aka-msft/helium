@@ -63,11 +63,11 @@ docker build --target=test -t helium:canary . #dev
 ### Run
 
 ```
-docker run -it -p 3000:3000 \                                                                                                                                                           -e APPINSIGHTS_INSTRUMENTATIONKEY='instrumentation_key' \
+docker run -it -p 3000:3000 \
   -e CLIENT_ID='client_id' \
   -e CLIENT_SECRET='client_secret' \
   -e TENANT_ID='tenant_id' \
-  -e KEY_VAULT_URL='key_vault_url' \
-  -e COSMOSDB_URL='cosmos_db_url' \
-  canary
+  -e KEY_VAULT_URL='https://keyvaultname.vault.azure.net/' \
+  -e COSMOSDB_URL='https://cosmosname.documents.azure.com:443/' \
+  helium:canary
 ```
