@@ -1,5 +1,6 @@
 import { CosmosDBProvider } from "../db/cosmosdbprovider";
 import { KeyVaultProvider } from "../secrets/keyvaultprovider";
+import { AppInsightsProvider } from "../telem/telemProvider";
 
 /**
  * A service locator to avoid a refactor for dependency injection using InverisfyJS.
@@ -22,11 +23,17 @@ export class ServiceLocator {
             const keyVaultUrl = process.env.KEY_VAULT_URL;
             locator.keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId);
 
+            // DB Service
             const cosmosDbUrl = process.env.COSMOSDB_URL;
             const cosmosDbKey = await locator.keyvault.getSecret("cosmosDBkey");
 
             const cosmosdb = new CosmosDBProvider(cosmosDbUrl, cosmosDbKey);
             locator.cosmosDB = cosmosdb;
+
+            // App Insights Service
+            const insightsInstrumentationKey = await locator.keyvault.getSecret("AppInsightsInstrumentationKey");
+            const telemClient = new AppInsightsProvider(insightsInstrumentationKey);
+            locator.telemClient = telemClient;
 
             ServiceLocator.instance = locator;
         }
@@ -38,6 +45,7 @@ export class ServiceLocator {
 
     private keyvault: KeyVaultProvider;
     private cosmosDB: CosmosDBProvider;
+    private telemClient: AppInsightsProvider;
 
     /**
      * Private constructor to force initialization through getInstance
@@ -57,5 +65,12 @@ export class ServiceLocator {
      */
     public getCosmosDB(): CosmosDBProvider {
         return ServiceLocator.instance.cosmosDB;
+    }
+
+    /**
+     * Returns an instance of the AppInsightsProvider
+     */
+    public getTelemClient(): AppInsightsProvider {
+        return ServiceLocator.instance.telemClient;
     }
 }

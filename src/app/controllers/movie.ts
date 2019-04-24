@@ -1,8 +1,6 @@
-import { collection, database } from "../../db/dbconstants";
 import { DocumentQuery } from "documentdb";
 import { ServiceLocator } from "../../config/servicelocator";
-import {telemetryClient} from "../../server";
-
+import { collection, database } from "../../db/dbconstants";
 
 /**
  *  Retrieve and return all movies
@@ -10,10 +8,11 @@ import {telemetryClient} from "../../server";
  */
 export async function getAll(req, res) {
 
-    telemetryClient.trackEvent({name: "getAll endpoint"});
-
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
+    const telem = locator.getTelemClient();
+
+    telem.trackEvent("get all movies");
 
     let querySpec: DocumentQuery;
 
@@ -48,10 +47,11 @@ export async function getAll(req, res) {
  */
 export async function createMovie(req, res) {
 
-    telemetryClient.trackEvent({name: "createMovie endpoint"});
-
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
+    const telem = locator.getTelemClient();
+
+    telem.trackEvent("create movie");
 
     // TODO (seusher): Add validation based on the model
     const result = await cosmosDb.upsertDocument(database, collection, req.body);
@@ -64,12 +64,13 @@ export async function createMovie(req, res) {
  */
 export async function getMovieById(req, res) {
 
-    telemetryClient.trackEvent({name: "getMovieById endpoint"});
-
     const movieId = req.params.id;
 
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
+    const telem = locator.getTelemClient();
+
+    telem.trackEvent("get movie by id");
 
     const querySpec: DocumentQuery  = {
         parameters: [

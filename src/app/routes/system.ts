@@ -1,11 +1,14 @@
+import { ServiceLocator } from "../../config/servicelocator";
 import * as health from "../controllers/system";
 
 /**
  * System endpoint routes
  */
-export function registerRoutes(app, telemetryClient) {
+export async function registerRoutes(app) {
 
-    telemetryClient.trackEvent({name: "Registering routes for healthcheck"});
+    const locator = await ServiceLocator.getInstance();
+    const telem = locator.getTelemClient();
+    telem.trackEvent("register system routes");
 
     // health check tells other services if this app is running properly or not
     app.get("/healthz", health.healthcheck);

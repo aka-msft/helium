@@ -1,7 +1,6 @@
 import { DocumentQuery } from "documentdb";
 import { ServiceLocator } from "../../config/servicelocator";
 import { collection, database } from "../../db/dbconstants";
-import { telemetryClient } from "../../server";
 
 /**
  * returns all genres from cosmos db instance
@@ -10,10 +9,11 @@ import { telemetryClient } from "../../server";
  */
 export async function getAll(req, res) {
 
-    telemetryClient.trackEvent({name: "getAll endpoint"});
-
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
+    const telem = locator.getTelemClient();
+
+    telem.trackEvent("get all actors");
 
     const querySpec = {
         parameters: [],

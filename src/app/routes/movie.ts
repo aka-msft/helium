@@ -1,11 +1,14 @@
+import { ServiceLocator } from "../../config/servicelocator";
 import * as movies from "../controllers/movie";
 
 /**
  * Movie endpoint routes
  */
-export function registerRoutes(app, telemetryClient) {
+export async function registerRoutes(app) {
 
-    telemetryClient.trackEvent({name: "In Register movie routes"});
+    const locator = await ServiceLocator.getInstance();
+    const telem = locator.getTelemClient();
+    telem.trackEvent("register movie routes");
 
     // @todo move up a level so other entities can inherit
     const apiPrefix = "/api";
