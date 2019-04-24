@@ -6,6 +6,14 @@ import {DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument} from "doc
 export class CosmosDBProvider {
 
     /**
+     * Builds a db link. Generates this over querying CosmosDB for performance reasons.
+     * @param database The name of the database the collection is in.
+     */
+    private static _buildDBLink(database: string): string {
+        return `/dbs/${database}`;
+    }
+
+    /**
      * Builds a collection link. Generates this over querying CosmosDB for performance reasons.
      * @param database The name of the database the collection is in.
      * @param collection The name of the collection.
@@ -43,6 +51,28 @@ export class CosmosDBProvider {
             const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
 
             this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results) => {
+                    if (err == null) {
+                        resolve(results);
+                    } else {
+                        reject(`${err.code}: ${err.body}`);
+                    }
+                });
+        });
+    }
+
+    /**
+     * Runs the given query against CosmosDB.
+     * @param database The database the document is in.
+     * @param query The query to select the documents.
+     */
+    public async queryCollections(database: string,
+                                  query: DocumentQuery): Promise<RetrievedDocument[]> {
+
+        // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
+        return new Promise((resolve, reject) => {
+            const dbLink = CosmosDBProvider._buildDBLink(database);
+
+            this.docDbClient.queryCollections(dbLink, query).toArray((err, results) => {
                     if (err == null) {
                         resolve(results);
                     } else {
