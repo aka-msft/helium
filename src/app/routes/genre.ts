@@ -1,3 +1,4 @@
+import { apiPrefix } from "../../config/constants";
 import { ServiceLocator } from "../../config/servicelocator";
 import * as genres from "../controllers/genre";
 
@@ -9,9 +10,6 @@ export async function registerRoutes(app) {
     const locator = await ServiceLocator.getInstance();
     const telem = locator.getTelemClient();
     telem.trackEvent("register genre routes");
-
-    // @todo move up a level so other entities can inherit
-    const apiPrefix = "/api";
 
     // Retrieve all genres
     app.get(apiPrefix + "/genres", genres.getAll);

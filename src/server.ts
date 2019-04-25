@@ -1,6 +1,7 @@
 import * as ApplicationInsights from "applicationinsights";
 import * as bodyParser from "body-parser";
 import * as restify from "restify";
+import * as actorRoutes from "./app/routes/genre";
 import * as genreRoutes from "./app/routes/genre";
 import * as movieRoutes from "./app/routes/movie";
 import * as systemRoutes from "./app/routes/system";
@@ -33,6 +34,7 @@ import { ServiceLocator } from "./config/servicelocator";
     systemRoutes.registerRoutes(server);
     movieRoutes.registerRoutes(server);
     genreRoutes.registerRoutes(server);
+    actorRoutes.registerRoutes(server);
 
     // listen for requests
     telem.trackEvent("Listening for requests");

@@ -1,6 +1,6 @@
 import { apiPrefix } from "../../config/constants";
 import { ServiceLocator } from "../../config/servicelocator";
-import * as movies from "../controllers/movie";
+import * as actors from "../controllers/actor";
 
 /**
  * Movie endpoint routes
@@ -9,15 +9,15 @@ export async function registerRoutes(app) {
 
     const locator = await ServiceLocator.getInstance();
     const telem = locator.getTelemClient();
-    telem.trackEvent("register movie routes");
+    telem.trackEvent("register actor routes");
 
     // Retrieve all movies
-    app.get(apiPrefix + "/movies", movies.getAll);
+    app.get(apiPrefix + "/actors", actors.getAll);
 
     // temporarily commenting out creating functionality for demo purposes
-    // Create a movie
-    // app.post(apiPrefix + "/movies", movies.createMovie);
+    // Create an actor
+    // app.post(apiPrefix + "/actors", actors.createActor);
 
-    // Retrieve a single movie by id
-    app.get(apiPrefix + "/movies/:id", movies.getMovieById);
+    // Retrieve a single actor by id
+    app.get(apiPrefix + "/actors/:id", actors.getActorById);
 }
