@@ -18,21 +18,24 @@ export async function getAll(req, res) {
 
     // Movie name is an optional query param.
     // If not specified, we should query for all movies.
-    const movieName = req.query.q;
+    const movieName: string = req.query.q;
     if (movieName === undefined) {
         querySpec = {
             parameters: [],
             query: "SELECT * FROM root where root.type = 'Movie'",
         };
     } else {
+        // Use StartsWith in the title search since the textSearch property always starts with the title.
+        // This avoids selecting movies with titles that also appear as Actor names or Genres.
+        // Make the movieName lowercase to match the case in the search.
         querySpec = {
             parameters: [
                 {
                     name: "@title",
-                    value: movieName,
+                    value: movieName.toLowerCase(),
                 },
             ],
-            query: "SELECT * FROM root where CONTAINS(root.title, @title) and root.type = 'Movie'",
+            query: "SELECT * FROM root where StartsWith(root.textSearch, @title) and root.type = 'Movie'",
         };
     }
 
@@ -79,7 +82,7 @@ export async function getMovieById(req, res) {
                 value: movieId,
             },
         ],
-        query: "SELECT * FROM root where root.movieId = @id",
+        query: "SELECT * FROM root where root.movieId = @id and root.type = 'Movie'",
     };
 
     // movieId isn't the partition key, so any search on it will require a cross-partition query.
