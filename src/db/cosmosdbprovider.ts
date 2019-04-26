@@ -1,4 +1,5 @@
 import {DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument} from "documentdb";
+import { ServiceLocator } from "../config/servicelocator";
 
 /**
  * Handles executing queries against CosmosDB
@@ -24,6 +25,8 @@ export class CosmosDBProvider {
 
     private docDbClient: DocumentClient;
 
+    private url: string;
+
     /**
      * Creates a new instance of the CosmosDB class.
      * @param url The url of the CosmosDB.
@@ -33,6 +36,7 @@ export class CosmosDBProvider {
         this.docDbClient = new DocumentClient(url, {
             masterKey: accessKey,
         });
+        this.url = url;
     }
 
     /**
@@ -46,11 +50,50 @@ export class CosmosDBProvider {
                                 query: DocumentQuery,
                                 options?: FeedOptions): Promise<RetrievedDocument[]> {
 
+        const locator = await ServiceLocator.getInstance();
+        const telem = locator.getTelemClient();
+
         // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
         return new Promise((resolve, reject) => {
             const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
 
+            // Get the timestamp immediately before the call to queryDocuments
+            const queryStartDateTime = new Date();
+            const queryStartTimeMs = queryStartDateTime.getTime();
+
             this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results) => {
+
+                    // Get the timestamp for when the query completes
+                    const queryEndDateTime = new Date();
+                    const queryEndTimeMs = queryEndDateTime.getTime();
+
+                    // Calculate query duration = difference between end and start timestamps
+                    const queryDurationMs = queryEndTimeMs - queryStartTimeMs;
+
+                    // Set values for dependency telemetry.
+                    const dependencyTypeName = "CosmosDB";
+                    const name = this.url;
+
+                    // TODO: Figure out how to extract the part of the query after the '?' in the request
+                    const data = query.toString();
+
+                    const resultCode = (err == null) ? "" : err.code.toString();
+                    const success = (err == null) ? true : false;
+                    const duration = queryDurationMs;
+
+                    // Get an object to track dependency information from the telemetry provider.
+                    const dependencyTelem = telem.getDependencyTrackingObject(
+                        dependencyTypeName,
+                        name,
+                        data,
+                        resultCode,
+                        success,
+                        duration,
+                    );
+
+                    // Track DependencyTelemetry for query
+                    telem.trackDependency(dependencyTelem);
+
                     if (err == null) {
                         resolve(results);
                     } else {

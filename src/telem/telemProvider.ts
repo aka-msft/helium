@@ -1,4 +1,5 @@
 import * as ApplicationInsights from "applicationinsights";
+import { DependencyTelemetry } from "applicationinsights/out/Declarations/Contracts/TelemetryTypes/DependencyTelemetry";
 
 /**
  * Handles sending telemetry data via AppInsights
@@ -9,11 +10,11 @@ export class AppInsightsProvider {
 
     /**
      * Creates a new instance of the App Insights client.
-     * @param insturmentationKey The key needed to register your app with App Insights
+     * @param instrumentationKey The key needed to register your app with App Insights
      */
-    constructor(insturmentationKey: string) {
+    constructor(instrumentationKey: string) {
         // Setup Application insights with the automatic collection and dependency tracking enabled
-        ApplicationInsights.setup(insturmentationKey)
+        ApplicationInsights.setup(instrumentationKey)
         .setAutoDependencyCorrelation(true)
         .setAutoCollectRequests(true)
         .setAutoCollectPerformance(true)
@@ -35,4 +36,37 @@ export class AppInsightsProvider {
         this.telemClient.trackEvent({name: eventName});
     }
 
+    /**
+     * Send quantifiable metrics to App Insights
+     * TelemetryClient.TrackDependency class and properties:
+     *      https://docs.microsoft.com/en-us/dotnet/api/microsoft.applicationinsights
+     *      .datacontracts.dependencytelemetry?view=azure-dotnet
+     */
+
+    public trackDependency(dependency: DependencyTelemetry) {
+
+        this.telemClient.trackDependency(dependency);
+    }
+
+    public getDependencyTrackingObject(
+        dtn: string,
+        n: string,
+        d: string,
+        rc: string,
+        s: boolean,
+        dur: number): DependencyTelemetry {
+
+        // Declare and initialize a DependencyTelemetry object for sending metrics to AppInsights
+        const dependencyTelem: DependencyTelemetry = {
+            data: d,
+            dependencyTypeName: dtn,
+            duration: dur,
+            name: n,
+            resultCode: rc,
+            success: s,
+        };
+
+        // Return the DependencyTelemetry object
+        return dependencyTelem;
+    }
 }
