@@ -22,7 +22,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 1. Clone the repository
 2. Open a terminal in the local repo directory
-3. [Follow CosmosDB instructions to set up KeyVault and CosmosDB](./docs/cosmosdb.md)
+3. [Follow CosmosDB instructions to set up KeyVault and CosmosDB](./docs/azure-infrastructure.md#create-and-setup-a-cosmosdb)
 4. Add the App Insights Instrumentation key to KeyVault. Call it `AppInsightsInstrumentationKey`.
 5. Run `npm install`
 
