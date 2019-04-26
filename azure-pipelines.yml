@@ -10,12 +10,9 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
-- task: NodeTool@0
+- task: DockerInstaller@0
   inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
-
+    dockerVersion: '17.09.0-ce'
 - script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+    docker build --target=test -t helium:canary .
+  displayName: 'npm dockerize... install, build, and lint'
