@@ -317,7 +317,7 @@ $ az webapp config appsettings set --resource-group {app_prefix}helium --name {p
 3. Restart Helium:
 
 ```bash
-$ az appservice web restart --resource-group {app_prefix}helium --name {prefix}helium
+$ az webapp restart --resource-group {app_prefix}helium --name {app_prefix}helium
 ```
 
 If you received output similar to above, at this point your web application has been completely created! It is now accessible at: **{prefix}helium.azurewebsites.net**.
