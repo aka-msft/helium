@@ -1,4 +1,4 @@
-# Deploying a Helium Linux Container in Azure App Services for Docker
+# Deploying a Helium Linux Container in Azure App Services for Container
 
 ## Before Starting
 
