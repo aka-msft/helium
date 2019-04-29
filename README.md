@@ -73,12 +73,24 @@ docker build --target=test -t helium:canary . #dev
 
 ### Run
 
+### With KeyVault
+
 ```
 docker run -it -p 3000:3000 \
   -e CLIENT_ID='client_id' \
   -e CLIENT_SECRET='client_secret' \
   -e TENANT_ID='tenant_id' \
   -e KEY_VAULT_URL='https://keyvaultname.vault.azure.net/' \
+  -e COSMOSDB_URL='https://cosmosname.documents.azure.com:443/' \
+  helium:canary
+```
+
+### Without KeyVault
+
+```
+docker run -it -p 3000:3000 \
+  -e COSMOSDB_KEY="your_key" \
+  -e APPINSIGHTS_INSTRUMENTATIONKEY="your_key" \
   -e COSMOSDB_URL='https://cosmosname.documents.azure.com:443/' \
   helium:canary
 ```
