@@ -19,7 +19,7 @@ RUN npm install
 # run linters, setup and tests
 FROM dependencies AS test
 COPY . .
-RUN  npm run lint && npm run build && npm run test
+RUN  npm run lint && npm run build && npm run test-unit
  
 #
 # ---- Release ----
@@ -27,3 +27,10 @@ FROM base AS release
 COPY --from=dependencies /app/prod_node_modules ./node_modules
 COPY --from=test /app/dist ./dist
 ENTRYPOINT [ "sh", "./scripts/start-service.sh" ]
+
+#
+# ---- Integration Test ----
+# run integration tests
+FROM dependencies AS integration
+COPY . .
+RUN npm run build && npm run test-integration
