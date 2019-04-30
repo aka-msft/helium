@@ -70,3 +70,8 @@ export class AppInsightsProvider {
         return dependencyTelem;
     }
 }
+
+export class MetricsProvider {
+    public getTimestamp
+
+}
