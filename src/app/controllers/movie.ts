@@ -39,7 +39,7 @@ export async function getAll(req, res) {
             ],
             query: `SELECT root.movieId, root.type, root.title, root.year,
             root.runtime, root.genres, root.roles
-            FROM root where StartsWith(root.textSearch, @title) and root.type = 'Movie'`,
+            FROM root where CONTAINS(root.textSearch, @title) and root.type = 'Movie'`,
         };
     }
 
