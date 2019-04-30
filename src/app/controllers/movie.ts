@@ -88,7 +88,7 @@ export async function getMovieById(req, res) {
         ],
         query: `SELECT root.movieId, root.type, root.title, root.year,
         root.runtime, root.genres, root.roles
-        FROM root where root.movieId = @id and root.type = 'Movie'`,
+        FROM root where root.id = @id and root.type = 'Movie'`,
     };
 
     // movieId isn't the partition key, so any search on it will require a cross-partition query.
