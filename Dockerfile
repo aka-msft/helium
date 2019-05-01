@@ -33,4 +33,5 @@ ENTRYPOINT [ "sh", "./scripts/start-service.sh" ]
 # run integration tests
 FROM dependencies AS integration
 COPY . .
+COPY --from=dependencies /app/prod_node_modules ./node_modules
 RUN npm run build && npm run test-integration
