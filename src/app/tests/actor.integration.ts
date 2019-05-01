@@ -2,7 +2,7 @@ import * as chai from "chai";
 import chaiHttp = require("chai-http");
 import "mocha";
 
-const server = "https://seusherhelium.azurewebsites.net/";
+const server = "https://heliumint.azurewebsites.net/";
 
 chai.use(chaiHttp);
 
