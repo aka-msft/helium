@@ -1,3 +1,5 @@
+
+
 # ---- Base Node ----
 FROM node:dubnium-alpine AS base
 WORKDIR /app
@@ -32,6 +34,8 @@ ENTRYPOINT [ "sh", "./scripts/start-service.sh" ]
 # ---- Integration Test ----
 # run integration tests
 FROM dependencies AS integration
+ARG integration_server_url=localhost:3000;
+ENV integration_server_url=${integration_server_url}
 COPY . .
 COPY --from=dependencies /app/prod_node_modules ./node_modules
-RUN npm run build && npm run test-integration
+RUN npm run build && npm run test-integration 
