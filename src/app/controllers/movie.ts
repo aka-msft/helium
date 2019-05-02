@@ -7,7 +7,6 @@ import { collection, database } from "../../db/dbconstants";
  *  Filter movies by name "?q=<name>"
  */
 export async function getAll(req, res) {
-
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
     const telem = locator.getTelemClient();
@@ -53,7 +52,6 @@ export async function getAll(req, res) {
  *  Create a movie
  */
 export async function createMovie(req, res) {
-
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
     const telem = locator.getTelemClient();
@@ -70,7 +68,6 @@ export async function createMovie(req, res) {
  * Retrieve and return a single movie by movie ID.
  */
 export async function getMovieById(req, res) {
-
     const movieId = req.params.id;
 
     const locator = await ServiceLocator.getInstance();

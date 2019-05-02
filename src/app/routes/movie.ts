@@ -11,6 +11,10 @@ export async function registerRoutes(app) {
     const telem = locator.getTelemClient();
     telem.trackEvent("register movie routes");
 
+    // Health check - pings CosmosDB
+    // TODO: Figure out how to implement health check
+    // app.get('/healthz', app);
+
     // Retrieve all movies
     app.get(apiPrefix + "/movies", movies.getAll);
 
