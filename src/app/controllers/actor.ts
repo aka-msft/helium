@@ -17,7 +17,9 @@ export async function getAll(req, res) {
 
     const querySpec = {
         parameters: [],
-        query: "SELECT * FROM root where root.type = 'Actor'",
+        query: `SELECT root.actorId, root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
+        FROM root
+        WHERE root.type = 'Actor'`,
     };
 
     const results = await cosmosDb.queryDocuments(database, collection, querySpec, { enableCrossPartitionQuery: true });
@@ -61,7 +63,8 @@ export async function getActorById(req, res) {
                 value: actorId,
             },
         ],
-        query: "SELECT * FROM root where root.actorId = @id",
+        query: `SELECT root.actorId, root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
+        FROM root where root.actorId = @id`,
     };
 
     // actorID isn't the partition key, so any search on it will require a cross-partition query.
