@@ -1,6 +1,6 @@
 import { CosmosDBProvider } from "../db/cosmosdbprovider";
 import { KeyVaultProvider } from "../secrets/keyvaultprovider";
-import { AppInsightsProvider } from "../telem/telemProvider";
+import { AppInsightsProvider, MetricsProvider } from "../telem/telemProvider";
 
 /**
  * A service locator to avoid a refactor for dependency injection using InverisfyJS.
@@ -136,5 +136,13 @@ export class ServiceLocator {
      */
     public getTelemClient(): AppInsightsProvider {
         return ServiceLocator.instance.telemClient;
+    }
+
+    /**
+     * Returns an instance of the MetricsProvider
+     */
+    public getMetricsProvider(): MetricsProvider {
+        return ServiceLocator.instance.Metric
+        // TODO: Create separate "Utilities" directory and make Metrics a utility instead
     }
 }

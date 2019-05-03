@@ -72,6 +72,10 @@ export class AppInsightsProvider {
 }
 
 export class MetricsProvider {
-    public getTimestamp
+    public getTimestamp (): number {
+        const now = new Date();
+        const timestamp = now.getTime();
+        return timestamp;
+    }
 
 }
