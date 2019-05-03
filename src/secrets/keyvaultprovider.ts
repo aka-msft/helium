@@ -7,11 +7,6 @@ import * as msrestazure from "ms-rest-azure";
 export class KeyVaultProvider {
     private client: keyvault.KeyVaultClient;
 
-    private url: string;
-    private clientId: string;
-    private clientSecret: string;
-    private tenantId: string;
-
     /**
      * Creates a new instance of the KeyVaultProvider class.
      * @param url The KeyVault URL
@@ -19,7 +14,7 @@ export class KeyVaultProvider {
      * @param clientSecret The password for the provided service principal.
      * @param tenantId The id of the tenant that the service principal is a member of.
      */
-    constructor(url: string, clientId: string, clientSecret: string, tenantId: string) {
+    constructor(private url: string, private clientId: string, private clientSecret: string, private tenantId: string) {
         this.url = url;
         this.clientId = clientId;
         this.clientSecret = clientSecret;

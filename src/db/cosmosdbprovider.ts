@@ -1,9 +1,11 @@
-import {DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument} from "documentdb";
-import { ServiceLocator } from "../config/servicelocator";
+import { DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument } from "documentdb";
+import { inject, injectable, named } from "inversify";
+import { ITelemProvider } from "../telem/itelemprovider";
 
 /**
  * Handles executing queries against CosmosDB
  */
+@injectable()
 export class CosmosDBProvider {
 
     /**
@@ -25,18 +27,19 @@ export class CosmosDBProvider {
 
     private docDbClient: DocumentClient;
 
-    private url: string;
-
     /**
      * Creates a new instance of the CosmosDB class.
      * @param url The url of the CosmosDB.
      * @param accessKey The CosmosDB access key (primary of secondary).
      */
-    constructor(url: string, accessKey: string) {
+    constructor(
+        @inject("string") @named("cosmosDbUrl") private url: string,
+        @inject("string") @named("cosmosDbKey") accessKey: string,
+        @inject("ITelemProvider") private telem: ITelemProvider) {
         this.docDbClient = new DocumentClient(url, {
             masterKey: accessKey,
         });
-        this.url = url;
+        this.telem = telem;
     }
 
     /**
@@ -45,13 +48,11 @@ export class CosmosDBProvider {
      * @param collection The collection the document is in.
      * @param query The query to select the documents.
      */
-    public async queryDocuments(database: string,
-                                collection: string,
-                                query: DocumentQuery,
-                                options?: FeedOptions): Promise<RetrievedDocument[]> {
-
-        const locator = await ServiceLocator.getInstance();
-        const telem = locator.getTelemClient();
+    public async queryDocuments(
+        database: string,
+        collection: string,
+        query: DocumentQuery,
+        options?: FeedOptions): Promise<RetrievedDocument[]> {
 
         // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
         return new Promise((resolve, reject) => {
@@ -63,43 +64,43 @@ export class CosmosDBProvider {
 
             this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results) => {
 
-                    // Get the timestamp for when the query completes
-                    const queryEndDateTime = new Date();
-                    const queryEndTimeMs = queryEndDateTime.getTime();
+                // Get the timestamp for when the query completes
+                const queryEndDateTime = new Date();
+                const queryEndTimeMs = queryEndDateTime.getTime();
 
-                    // Calculate query duration = difference between end and start timestamps
-                    const queryDurationMs = queryEndTimeMs - queryStartTimeMs;
+                // Calculate query duration = difference between end and start timestamps
+                const queryDurationMs = queryEndTimeMs - queryStartTimeMs;
 
-                    // Set values for dependency telemetry.
-                    const dependencyTypeName = "CosmosDB";
-                    const name = this.url;
+                // Set values for dependency telemetry.
+                const dependencyTypeName = "CosmosDB";
+                const name = this.url;
 
-                    // TODO: Figure out how to extract the part of the query after the '?' in the request
-                    const data = query.toString();
+                // TODO: Figure out how to extract the part of the query after the '?' in the request
+                const data = query.toString();
 
-                    const resultCode = (err == null) ? "" : err.code.toString();
-                    const success = (err == null) ? true : false;
-                    const duration = queryDurationMs;
+                const resultCode = (err == null) ? "" : err.code.toString();
+                const success = (err == null) ? true : false;
+                const duration = queryDurationMs;
 
-                    // Get an object to track dependency information from the telemetry provider.
-                    const dependencyTelem = telem.getDependencyTrackingObject(
-                        dependencyTypeName,
-                        name,
-                        data,
-                        resultCode,
-                        success,
-                        duration,
-                    );
+                // Get an object to track dependency information from the telemetry provider.
+                const dependencyTelem = this.telem.getDependencyTrackingObject(
+                    dependencyTypeName,
+                    name,
+                    data,
+                    resultCode,
+                    success,
+                    duration,
+                );
 
-                    // Track DependencyTelemetry for query
-                    telem.trackDependency(dependencyTelem);
+                // Track DependencyTelemetry for query
+                this.telem.trackDependency(dependencyTelem);
 
-                    if (err == null) {
-                        resolve(results);
-                    } else {
-                        reject(`${err.code}: ${err.body}`);
-                    }
-                });
+                if (err == null) {
+                    resolve(results);
+                } else {
+                    reject(`${err.code}: ${err.body}`);
+                }
+            });
         });
     }
 
@@ -108,20 +109,21 @@ export class CosmosDBProvider {
      * @param database The database the document is in.
      * @param query The query to select the documents.
      */
-    public async queryCollections(database: string,
-                                  query: DocumentQuery): Promise<RetrievedDocument[]> {
+    public async queryCollections(
+        database: string,
+        query: DocumentQuery): Promise<RetrievedDocument[]> {
 
         // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
         return new Promise((resolve, reject) => {
             const dbLink = CosmosDBProvider._buildDBLink(database);
 
             this.docDbClient.queryCollections(dbLink, query).toArray((err, results) => {
-                    if (err == null) {
-                        resolve(results);
-                    } else {
-                        reject(`${err.code}: ${err.body}`);
-                    }
-                });
+                if (err == null) {
+                    resolve(results);
+                } else {
+                    reject(`${err.code}: ${err.body}`);
+                }
+            });
         });
     }
 

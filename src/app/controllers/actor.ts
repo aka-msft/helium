@@ -1,74 +1,76 @@
 import { DocumentQuery } from "documentdb";
-import { ServiceLocator } from "../../config/servicelocator";
+import { inject, injectable } from "inversify";
+import { Controller, Get, interfaces } from "inversify-restify-utils";
+import { Request } from "restify";
 import { collection, database } from "../../db/dbconstants";
+import { IDatabaseProvider } from "../../db/idatabaseprovider";
+import { ITelemProvider } from "../../telem/itelemprovider";
 
 /**
- * Retrieve and Returns all actors
- * @param req request object
- * @param res response object
+ * controller implementation for our actors endpoint
  */
-export async function getAll(req, res) {
+@Controller("/api/actors")
+@injectable()
+export class ActorController implements interfaces.Controller {
 
-    const locator = await ServiceLocator.getInstance();
-    const cosmosDb = locator.getCosmosDB();
-    const telem = locator.getTelemClient();
+    constructor(
+        @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
+        @inject("ITelemProvider") private telem: ITelemProvider) {
+        this.cosmosDb = cosmosDb;
+        this.telem = telem;
+    }
 
-    telem.trackEvent("get all actors");
+    /**
+     * returns all actors from cosmos db instance
+     * @param req request object
+     * @param res response object
+     */
+    @Get("/")
+    public async getAll(req: Request, res) {
 
-    const querySpec = {
-        parameters: [],
-        query: `SELECT root.actorId, root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
-        FROM root
-        WHERE root.type = 'Actor'`,
-    };
+        this.telem.trackEvent("get all actors");
 
-    const results = await cosmosDb.queryDocuments(database, collection, querySpec, { enableCrossPartitionQuery: true });
+        const querySpec = {
+            parameters: [],
+            query: `SELECT root.actorId,
+                    root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
+            FROM root
+            WHERE root.type = 'Actor'`,
+        };
 
-    return res.send(200, results);
-}
+        const results = await this.cosmosDb.queryDocuments(database,
+            collection,
+            querySpec,
+            { enableCrossPartitionQuery: true });
 
-/**
- *  Create a actor
- */
+        return res.send(200, results);
+    }
 
-/*
-// removing create functionality temporarily for demos
-export async function createActor(req, res) {
-    telemetryClient.trackEvent({name: "createActor endpoint"});
-    const locator = await ServiceLocator.getInstance();
-    const cosmosDb = locator.getCosmosDB();
-    // TODO (seusher): Add validation based on the model
-    const result = await cosmosDb.upsertDocument(database, collection, req.body);
-    return res.send(200, result);
-}
-*/
+    @Get("/:id")
+    public async getActorById(req, res) {
 
-/**
- * Retrieve and return a single actor by actor ID.
- */
-export async function getActorById(req, res) {
+        const actorId = req.params.id;
 
-    const actorId = req.params.id;
+        this.telem.trackEvent("get actor by id");
 
-    const locator = await ServiceLocator.getInstance();
-    const cosmosDb = locator.getCosmosDB();
-    const telem = locator.getTelemClient();
+        const querySpec: DocumentQuery  = {
+            parameters: [
+                {
+                    name: "@id",
+                    value: actorId,
+                },
+            ],
+            query: `SELECT root.actorId,
+                    root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
+                    FROM root where root.actorId = @id`,
+        };
 
-    telem.trackEvent("get actor by id");
+        // actorID isn't the partition key, so any search on it will require a cross-partition query.
+        const results = await this.cosmosDb.queryDocuments(database,
+            collection,
+            querySpec,
+            { enableCrossPartitionQuery: true });
 
-    const querySpec: DocumentQuery  = {
-        parameters: [
-            {
-                name: "@id",
-                value: actorId,
-            },
-        ],
-        query: `SELECT root.actorId, root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
-        FROM root where root.actorId = @id`,
-    };
-
-    // actorID isn't the partition key, so any search on it will require a cross-partition query.
-    const results = await cosmosDb.queryDocuments(database, collection, querySpec, { enableCrossPartitionQuery: true });
-
-    return res.send(200, results);
+        return res.send(200, results);
+    }
 }

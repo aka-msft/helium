@@ -1,30 +1,41 @@
 import { DocumentQuery } from "documentdb";
-import { ServiceLocator } from "../../config/servicelocator";
-import { collection, database } from "../../db/dbconstants";
+import { inject, injectable } from "inversify";
+import { Controller, Get, interfaces } from "inversify-restify-utils";
+import { database } from "../../db/dbconstants";
+import { IDatabaseProvider } from "../../db/idatabaseprovider";
+import { ITelemProvider } from "../../telem/itelemprovider";
 
 /**
- * Health check controller
- * tells external services if the service is running
+ * controller implementation for our system endpoint
  */
-export async function healthcheck(req, res) {
-    // Stub:
-    const locator = await ServiceLocator.getInstance();
-    // @todo query cosmos and return 200 if it works
-    const cosmosDb = locator.getCosmosDB();
-    const telem = locator.getTelemClient();
+@Controller("/api/healthz")
+@injectable()
+export class SystemController implements interfaces.Controller {
 
-    telem.trackEvent("healthcheck called");
-
-    const querySpec: DocumentQuery  = {
-        parameters: [],
-        query: "SELECT * FROM root",
-    };
-
-    try {
-        const results = await cosmosDb.queryCollections(database, querySpec);
-    } catch (e) {
-        return res.send(500, {message: "Application failed to reach database"});
+    constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
+                @inject("ITelemProvider") private telem: ITelemProvider) {
+        this.cosmosDb = cosmosDb;
+        this.telem = telem;
     }
 
-    return res.send(200, {message: "Successfully reached healthcheck endpoint"});
+    /**
+     * tells external services if the service is running
+     */
+    @Get("/")
+    public async healthcheck(req, res) {
+        this.telem.trackEvent("healthcheck called");
+
+        const querySpec: DocumentQuery = {
+            parameters: [],
+            query: "SELECT * FROM root",
+        };
+
+        try {
+            const results = await this.cosmosDb.queryCollections(database, querySpec);
+        } catch (e) {
+            return res.send(500, { message: "Application failed to reach database" });
+        }
+
+        return res.send(200, { message: "Successfully reached healthcheck endpoint" });
+    }
 }

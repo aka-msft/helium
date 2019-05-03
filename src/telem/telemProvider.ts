@@ -1,9 +1,11 @@
 import * as ApplicationInsights from "applicationinsights";
 import { DependencyTelemetry } from "applicationinsights/out/Declarations/Contracts/TelemetryTypes/DependencyTelemetry";
+import { inject, injectable, named } from "inversify";
 
 /**
  * Handles sending telemetry data via AppInsights
  */
+@injectable()
 export class AppInsightsProvider {
 
     private telemClient: ApplicationInsights.TelemetryClient;
@@ -12,7 +14,7 @@ export class AppInsightsProvider {
      * Creates a new instance of the App Insights client.
      * @param instrumentationKey The key needed to register your app with App Insights
      */
-    constructor(instrumentationKey: string) {
+    constructor(@inject("string") @named("instrumentationKey") instrumentationKey: string) {
         // Setup Application insights with the automatic collection and dependency tracking enabled
         ApplicationInsights.setup(instrumentationKey)
         .setAutoDependencyCorrelation(true)
