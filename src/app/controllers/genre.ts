@@ -17,7 +17,7 @@ export async function getAll(req, res) {
 
     const querySpec = {
         parameters: [],
-        query: "SELECT * FROM root where root.type = 'Genre'",
+        query: "SELECT root.id, root.type, root.genre FROM root where root.type = 'Genre'",
     };
 
     const results = await cosmosDb.queryDocuments(database, collection, querySpec, { enableCrossPartitionQuery: true });
