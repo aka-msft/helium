@@ -6,6 +6,9 @@ export interface ITelemProvider {
      * @param eventName Name of event to track
      */
     trackEvent(eventName: string): void;
+
+    trackDependency(dependency: DependencyTelemetry);
+
     getDependencyTrackingObject(
         dtn: string,
         n: string,
@@ -13,5 +16,4 @@ export interface ITelemProvider {
         rc: string,
         s: boolean,
         dur: number): DependencyTelemetry;
-    trackDependency(dependency: DependencyTelemetry);
 }

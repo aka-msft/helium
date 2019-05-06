@@ -1,2 +1,1 @@
-npm run build
-npm run test-integration
+npm run build && npm run test-integration
