@@ -1,4 +1,4 @@
-# Deploying a Helium Linux Container in Azure App Services for Container
+# Deploying a Helium Linux Container in Azure App Services for Containers
 
 ## Before Starting
 
@@ -27,8 +27,8 @@ In order for the Helium demonstration to work, Azure infrastructure must first b
 4. [Create an Azure Container Registry](#create-an-azure-container-registry)
 5. [Create your Application Service Plan](#create-your-application-service-plan)
 6. [Create and Setup a CosmosDB](#create-and-setup-a-cosmosdb)
-7. [Create and Configure an Azure KeyVault](#create-and-configure-an-azure-keyvault)
-8. [Configure Application Insights for Application Monitoring](#configure-application-insights-for-application-monitoring)
+7. [Configure Application Insights for Application Monitoring](#configure-application-insights-for-application-monitoring)
+8. [Create and Configure an Azure KeyVault](#create-and-configure-an-azure-keyvault)
 
 ### Login to Azure
 
@@ -174,7 +174,7 @@ az appservice plan create --name {app_prefix}heliumapp --resource-group {app_pre
 The Helium application will query a CosmosDB instance for data as part of its operation. As such, a database instance will need to be created:
 
 ```bash
-$ az cosmosdb create --name "{app_prefix}heliumcosmosdb" --resource-group "{app_prefix}helium"
+$ az cosmosdb create --name {app_prefix}heliumcosmosdb --resource-group {app_prefix}helium
 {
   "capabilities": [],
   "consistencyPolicy": {
@@ -188,12 +188,29 @@ Next, follow the instructions importing the neccessary data into the CosmosDB in
 
 While logged-in to the [Azure Portal](https://portal.azure.com), examine your Cosmos DB instance - make note of your database's URL (it should look similar to: _https://{app_prefix}heliumcosmosdb.documents.azure.com:443/_). This will be needed in a later step.
 
+### Configure Application Insights for Application Monitoring
+
+We will use Azure Application Insights for application monitoring. First up, we must create the Application Insights instance to use. 
+
+```bash
+$ az resource create --resource-group {app_prefix}helium --resource-type "Microsoft.Insights/components" --name {app_prefix}_Insights --location "East US" --properties '{"Application_Type": "Node.JS", "Flow_Type": "Redfield", "Request_Source": "IbizaAIExtension"}'
+```
+
+Then, we retrieve the instrumentation key of this instance. 
+
+```bash
+$ az resource show -g "{app_prefix}helium" -n "{app_prefix}_Insights" --resource-type "Microsoft.Insights/components" --query properties.InstrumentationKey
+
+"zz7522ec-32bd-4zfb-87df-1c20aa694azz"
+```
+Note down this instrumentation key ("zz7522ec-32bd-4zfb-87df-1c20aa694azz"). The instrumentation key will be used in the code to upload logs and metrics to the Application Insights instance.
+
 ### Create and Configure an Azure KeyVault
 
 An Azure KeyVault is used to store secrets in a safe and secure manner, to create a KeyVault instance:
 
 ```bash 
-$ az keyvault create --name "{app_prefix}heliumkeyvault" --resource-group "{app_prefix}helium" --location "eastus"
+$ az keyvault create --name {app_prefix}heliumkeyvault --resource-group {app_prefix}helium --location "eastus"
 {
   "id": "/subscriptions/7060bca0-zzzz-zzzz-zzzz-4bb1e9facfac/resourceGroups/helium/providers/Microsoft.KeyVault/vaults/{app_prefix}heliumkeyvault",
   "location": "eastus",
@@ -202,12 +219,12 @@ $ az keyvault create --name "{app_prefix}heliumkeyvault" --resource-group "{app_
     "accessPolicies": [ ...
 ```
 
-Next, add the CosmosDB access key as a KeyVault secret by executing the dollowing commands:
+Now, add the CosmosDB access key as a KeyVault secret by executing the following commands:
 
 ```bash
 $ keys=`az cosmosdb list-keys --name {app_prefix}heliumcosmosdb --resource-group {app_prefix}helium`
 $ masterKey=`echo $keys | jq '.primaryMasterKey' | tr -d '"'`
-$ az keyvault secret set --vault-name "{app_prefix}heliumkeyvault" --name "cosmosDBkey" --value "$masterKey"
+$ az keyvault secret set --vault-name {app_prefix}heliumkeyvault --name "cosmosDBkey" --value "$masterKey"
 {
   "attributes": {
     "created": "2019-04-23T16:13:24+00:00",
@@ -218,7 +235,21 @@ $ az keyvault secret set --vault-name "{app_prefix}heliumkeyvault" --name "cosmo
     "updated": "2019-04-23T16:13:24+00:00" ...
 ```
 
-Now create a new app registration with KeyVault secret read access:
+Next, add the App Insights key as a KeyVault secret by executing the following command:
+
+```bash
+$ az keyvault secret set --vault-name {app_prefix}heliumkeyvault --name "AppInsightsInstrumentationKey" --value "{app insights key}"
+{
+  "attributes": {
+    "created": "2019-04-23T16:13:24+00:00",
+    "enabled": true,
+    "expires": null,
+    "notBefore": null,
+    "recoveryLevel": "Purgeable",
+    "updated": "2019-04-23T16:13:24+00:00" ...
+```
+
+Finally, create a new policy that allows the service principal to have KeyVault secret read access:
 
 ```bash
 $ az keyvault set-policy --name {app_prefix}heliumkeyvault --secret-permissions get --spn {appId from the service principal}
@@ -232,23 +263,6 @@ $ az keyvault set-policy --name {app_prefix}heliumkeyvault --secret-permissions 
 ```
 
 Login to the [Azure Portal](https://portal.azure.com), examine your KeyVault instance - make note of your KeyVaults's URL (it should look similar to: _https://{app_prefix}heliumkeyvault.vault.azure.net/_). This will also be needed in a later step.
-
-### Configure Application Insights for Application Monitoring
-
-We will use Azure Application Insights for application monitoring. First up, we must create the Application Insights instance to use. 
-
-```bash
-$ az resource create --resource-group "{app_prefix}helium" --resource-type "Microsoft.Insights/components" --name "{app_prefix}_Insights" --location "East US" --properties '{"Application_Type": "Node.JS", "Flow_Type": "Redfield", "Request_Source": "IbizaAIExtension"}'
-```
-
-Then, we retrieve the instrumentation key of this instance. 
-
-```bash
-$ az resource show -g "{app_prefix}helium" -n "{app_prefix}_Insights" --resource-type "Microsoft.Insights/components" --query properties.InstrumentationKey
-
-"zz7522ec-32bd-4zfb-87df-1c20aa694azz"
-```
-Note down this instrumentation key ("zz7522ec-32bd-4zfb-87df-1c20aa694azz"). The instrumentation key will be used in the code to upload logs and metrics to the Application Insights instance.
 
 ## Building & Deploying
 
@@ -267,8 +281,7 @@ It is finally time to build Helium and then push the container image to the Azur
 2. Login the Docker CLI to your ACR:
 
 ```bash
-$ docker login {app_prefix}heliumacr.azurecr.io -u {app_prefix}heliumacr -p {one of the two passwords retrieved when creating the ACR}
-WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+$ az acr login --name {app_prefix}heliumacr
 Login Succeeded
 ```
 
@@ -307,39 +320,47 @@ $ az webapp create --resource-group {app_prefix}helium --plan {app_prefix}helium
 
 ```bash
 $ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings COSMOSDB_URL="{Cosmos DB URL}"
-$ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings APPINSIGHTS_INSTRUMENTATIONKEY={app insights key}
 $ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings KEY_VAULT_URL="{KeyVault URL}"
 $ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings TENANT_ID={service principal tenand id}
 $ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings CLIENT_SECRET={service principal password}
 $ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings CLIENT_ID={service principal appId}
 ```
 
-3. Restart Helium:
+3. Configuration via the Azure Portal is needed. Open the [Azure Portal](https://portal.azure.com) and perform the following actions:
+  - Go to your resource group _{app_prefix}helium_
+  - Go to your web application _{app_prefix}helium_
+  - Go to **Container Settings**
+  - Click on **Single Container**
+  - Click on **Azure Container Registry**
+  - In **Registry** enter _{app_prefix}heliumacr_
+  - In **Image** enter _helium_
+  - In **Tag** enter _canary_
+  - Toggle **Continuous Deployment** to _on_ (if continuous deployment via webhooks is desired)
+  - Click **Save**
+  - Go to **Overview**
+  - Click **Restart**
 
-```bash
-$ az webapp restart --resource-group {app_prefix}helium --name {app_prefix}helium
-```
-
-If you received output similar to above, at this point your web application has been completely created! It is now accessible at: **{prefix}helium.azurewebsites.net**.
+At this point, the web application has been completely deployed! It is now accessible at: **https://{prefix}helium.azurewebsites.net/api/movies**.
 
 ### Configure Dashboard with Azure Monitor Metrics
 
-Now, that we have the app deployed and all the infrastructure deployed, we can create a metrics dashboard that lists metrics and logs relevant to your app in one place. For this, we will go into the Azure Portal.
+Now that Helium and its supporting infrastructure have been deployed, it's time to create a dashboard to display relevant metrics and logging data:
 
 #### Creating the Dashboard and Tiles
- 1. Open Azure Portal - http://portal.azure.com. Login with your credentials.
- 2. Navigate to "Dashboard" on the left pane. Create a new dashboard using the "+ New Dashboard" button.
- 3. Give your dashboard a name say "Azure App Service dashboard". From the 'Tile Gallery' on the left, Add 'Metrics chart' two times.
- 4. Also add 'Application Map - Application Insights' and 'Search - Application Insights'.
- 5. For Cosmos DB monitoring, add two more 'Metrics' charts.
- 6. Save the dashboard by clicking on "Done customizing".
+ 1. Open the [Azure Portal](https://portal.azure.com)
+ 2. Navigate to **Dashboard** on the left pane, and then create a new dashboard using the **+ New Dashboard** button
+ 3. Give the dashboard a name, for example: _Azure App Service dashboard_
+ 4. From the **Tile Gallery** on the left, add **Metrics chart** two times
+ 5. Add **Application Map - Application Insights** and **Search - Application Insights**
+ 6. For Cosmos DB monitoring, add two more **Metrics** charts
+ 7. Save the dashboard by clicking **Done customizing**
 
 
 #### Populating the Tiles
-1. Click on 'Configure tile' for Metric chart #1. Click on '+ Select a resource'. Select your resource group from the drop down, and select 'All resources'. From the list of resources, select the Azure App service plan resource.
-2. In the 'Metric' drop down, select 'CPU percentage'. Click on 'Update dashboard' on the right.
-3. Click on 'Configure tile' for Metric chart #2. Repeat the steps as above but now select 'Memory percentage' from the 'Metric' drop down. Click on 'Update dashboard' to update it.
-4. Click on 'Configure tile' for 'Application Map' tile. Choose your subscription, resource group and then the name of the 'Application Insights' instance we created above.
-5. Repeat this for the 'Search' tile too and connect it to the 'Application Insights' instance we created.
-6. Click on the two Cosmos DB 'Metrics' charts. Similar to the above steps select the resource group and the cosmos DB resource. From the metric dropdown select 'Total requests' for one and 'Total Request units' for another. Update the dashboard.
-7. Now your dashboard has the metrics on CPU and memory usage of the Azure App service plan and also provides you a way to search through the custom logs from your app using the 'Search - Application Insights' tile.
+1. Click **Configure tile** for Metric chart #1, next click **+ Select a resource**, then select your resource group from the drop down, and select **All resources** - from the list of resources, select the _Azure App service_ plan resource.
+2. In the **Metric** drop down, select **CPU percentage**, then click **Update dashboard** on the right
+3. Click **Configure tile** for Metric chart #2, repeat the steps as above but now select **Memory percentage** from the **Metric** drop down - click **Update dashboard** to update the configuration
+4. Click **Configure tile** for **Application Map** tile, choose the subscription, resource group, and the name of the **Application Insights** instance which was created above
+5. Repeat this for the **Search** tile as well and then connect it to the **Application Insights** instance created earlier
+6. Click on the two Cosmos DB **Metrics** charts - similar to the above steps, select the resource group and then the cosmos DB resource from the metric dropdown select **Total requests** for one and then **Total Request units** for the other - update the dashboard
+7. Now the dashboard contains metrics on CPU and memory usage for the Azure App Service Plan while also providing a way to search through custom logs from the application using the **Search - Application Insights** tile
