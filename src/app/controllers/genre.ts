@@ -12,8 +12,9 @@ import { ITelemProvider } from "../../telem/itelemprovider";
 @injectable()
 export class GenreController implements interfaces.Controller {
 
-    constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-                @inject("ITelemProvider") private telem: ITelemProvider) {
+    constructor(
+        @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
+        @inject("ITelemProvider") private telem: ITelemProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
     }

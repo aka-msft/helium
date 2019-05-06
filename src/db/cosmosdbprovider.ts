@@ -39,6 +39,7 @@ export class CosmosDBProvider {
         this.docDbClient = new DocumentClient(url, {
             masterKey: accessKey,
         });
+        this.url = url;
         this.telem = telem;
     }
 

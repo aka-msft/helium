@@ -53,9 +53,42 @@ $ npm run build
 
 ### Test (Unit tests)
 
-1. Create your unit test file adjacent to your source file in the `src/` directory.  Name your test as `*.test.ts`.
-2. From the project root, run `npm test` in the terminal.
+1. Create your unit test file in the `src/tests/` directory.  Name your test as `*.unit.ts`.
+2. From the project root, run `npm run test-unit` in the terminal.
 3. Output should show that your test ran.
+
+### Test (Integration Tests)
+
+1. Create your integration test file  in the `src/tests/` directory.  Name your test as `*.integration.ts`.
+2. Use either Docker or Docker Compose shown in the instructions below to run the integration test locally.
+3. Output should show that your test ran.
+
+#### Docker
+
+```
+docker build --build-arg integration_server_url=<endpoint_url> --target=integration -t  helium:canary .
+docker run -it -p 3000:3000  helium:canary
+```
+
+#### Docker Compose
+
+Docker Compose builds and runs the services detailed in the `docker-compose.yml` file.
+
+```
+docker-compose build # Services are built and tagged
+docker-compose up # Builds, (re)creates, starts, and attaches to containers for a service. Also starts any linked services
+```
+
+Note: Environment variables can be defined either directly or by referencing a `.env `file in the YAML file. Below is an example of what a `.env` file would look like for the helium app:
+
+helium-release.env
+```
+CLIENT_ID=client_id
+CLIENT_SECRET=client_secret
+TENANT_ID=tenant_id
+KEY_VAULT_URL=key_vault_url
+COSMOSDB_URL=cosmosdb_url
+```
 
 ### Run dev server
 
@@ -64,16 +97,16 @@ $ npm run build
 
 ### Docker
 
-### Build
+#### Build
 
 ```
 docker build --target=release -t helium:canary . #production
 docker build --target=test -t helium:canary . #dev
 ```
 
-### Run
+#### Run
 
-### With KeyVault
+#### With KeyVault
 
 ```
 docker run -it -p 3000:3000 \
@@ -85,7 +118,7 @@ docker run -it -p 3000:3000 \
   helium:canary
 ```
 
-### Without KeyVault
+#### Without KeyVault
 
 ```
 docker run -it -p 3000:3000 \
@@ -93,4 +126,18 @@ docker run -it -p 3000:3000 \
   -e APPINSIGHTS_INSTRUMENTATIONKEY="your_key" \
   -e COSMOSDB_URL='https://cosmosname.documents.azure.com:443/' \
   helium:canary
+```
+
+### Docker Compose
+
+#### Build
+
+```
+docker-compose build # Services in docker-compose.yml are built and tagged
+```
+
+#### Run
+
+```
+docker-compose up # Builds, (re)creates, starts, and attaches to containers for a service. Also starts any linked services
 ```

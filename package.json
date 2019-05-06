@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "test": "mocha --reporter spec --compilers ts:ts-node/register '**/*.test.ts'",
+    "test-unit": "mocha --reporter spec --compilers ts:ts-node/register '**/*.unit.ts'",
+    "test-integration": "mocha --reporter spec --timeout 5000 --compilers ts:ts-node/register '**/*.integration.ts'",
     "build": "gulp scripts",
     "docker-build": "docker build -t helium:canary .",
     "docker-run": "docker run -it -p 8080:8080 helium:canary"
@@ -50,6 +51,7 @@
     "gulp": "^3.9.1",
     "gulp-typescript": "^3.1.1",
     "mocha": "^3.1.2",
+    "mocha-junit-reporter": "^1.22.0",
     "tslint": "^5.16.0",
     "typescript": "^3.4.4",
     "typescript-tslint-plugin": "^0.3.1"

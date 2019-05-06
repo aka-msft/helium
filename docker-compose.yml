@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+  helium-release:
+    build:
+      context: .
+      target: release
+    image: helium:canary
+    env_file:
+      - ./docker/helium-release.env
+    expose:
+      - "3000"
+  helium-integration:
+    build:
+      context: .
+      target: integration
+    image: helium:integration
+    environment:
+      integration_server_url: helium-release:3000
+    links:
+      - helium-release
+    

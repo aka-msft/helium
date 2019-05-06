@@ -1,6 +1,6 @@
 import { DocumentQuery } from "documentdb";
 import { inject, injectable } from "inversify";
-import { Controller, Get, interfaces } from "inversify-restify-utils";
+import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
 import { Request } from "restify";
 import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
@@ -53,7 +53,7 @@ export class ActorController implements interfaces.Controller {
 
         this.telem.trackEvent("get actor by id");
 
-        const querySpec: DocumentQuery  = {
+        const querySpec: DocumentQuery = {
             parameters: [
                 {
                     name: "@id",
@@ -72,5 +72,16 @@ export class ActorController implements interfaces.Controller {
             { enableCrossPartitionQuery: true });
 
         return res.send(200, results);
+    }
+
+    /**
+     *  Create an actor
+     */
+    @Post("/")
+    public async createActor(req, res) {
+        this.telem.trackEvent("createActor endpoint");
+        // TODO (seusher): Add validation based on the model
+        const result = await this.cosmosDb.upsertDocument(database, collection, req.body);
+        return res.send(200, result);
     }
 }
