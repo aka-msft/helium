@@ -16,7 +16,7 @@ export async function registerRoutes(app) {
 
     // temporarily commenting out creating functionality for demo purposes
     // Create an actor
-    // app.post(apiPrefix + "/actors", actors.createActor);
+    app.post(apiPrefix + "/actors", actors.createActor);
 
     // Retrieve a single actor by id
     app.get(apiPrefix + "/actors/:id", actors.getActorById);

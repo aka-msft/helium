@@ -26,20 +26,18 @@ export async function getAll(req, res) {
 }
 
 /**
- *  Create a actor
+ *  Create an actor
  */
-
-/*
 // removing create functionality temporarily for demos
 export async function createActor(req, res) {
-    telemetryClient.trackEvent({name: "createActor endpoint"});
     const locator = await ServiceLocator.getInstance();
     const cosmosDb = locator.getCosmosDB();
+    const telemClient = locator.getTelemClient();
+    telemClient.trackEvent("createActor endpoint");
     // TODO (seusher): Add validation based on the model
     const result = await cosmosDb.upsertDocument(database, collection, req.body);
     return res.send(200, result);
 }
-*/
 
 /**
  * Retrieve and return a single actor by actor ID.
