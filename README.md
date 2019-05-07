@@ -141,3 +141,9 @@ docker-compose build # Services in docker-compose.yml are built and tagged
 ```
 docker-compose up # Builds, (re)creates, starts, and attaches to containers for a service. Also starts any linked services
 ```
+
+OR 
+
+```
+docker-compose up --abort-on-container-exit # Stops all containers if one container exits
+```
