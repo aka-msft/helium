@@ -1,34 +1,56 @@
 import * as chai from "chai";
 import chaiHttp = require("chai-http");
 import "mocha";
+import { StringUtilities } from "../../utilities/stringUtilities";
 
 const server = process.env.integration_server_url;
+const stringUtil = new StringUtilities();
 
 chai.use(chaiHttp);
 
 describe("Testing Movie Controller Methods", () => {
 
-  it("Testing /api/movies", async () => {
-    const movieId = "tt0347779";
+  it("Testing GET /api/movies", async () => {
     return chai.request(server)
     .get(`/api/movies`)
     .then((res) => {
       chai.expect(res).to.have.status(200);
-      const id = res.body[0].movieId;
-      // chai.assert.include(res.body[0], movieId );
-      chai.assert.equal(id, movieId);
+      const body = res.body;
+      chai.assert.isArray(body);
     });
   });
 
-  it("Testing /api/movies/:id", async () => {
-    const queryId = "tt0120737";
+  const randomString = stringUtil.getRandomString();
+
+  const testMovie = {
+    genres: [],
+    id: randomString,
+    movieId: randomString,
+    roles: [],
+    runtime: 120,
+    title: randomString,
+    type: "Movie",
+    year: 1994,
+  };
+
+  it("Testing POST + GET /api/movies/:id", async () => {
     return chai.request(server)
-    .get(`/api/movies/${queryId}`)
+    .post("/api/movies")
+    .set("content-type", "application/json")
+    .send(testMovie)
     .then((res) => {
+
       chai.expect(res).to.have.status(200);
-      const id = res.body[0].movieId;
-      chai.assert.equal(queryId, id);
+      return chai.request(server)
+        .get(`/api/movies/${randomString}`)
+        .then((getResponse) => {
+          chai.expect(getResponse).to.have.status(200);
+          const getRespBody = getResponse.body;
+          chai.assert.isArray(getRespBody);
+          chai.assert.isAtLeast(getRespBody.length, 1);
+          chai.assert.equal(randomString, getRespBody[0].movieId);
+          chai.assert.equal(randomString, getRespBody[0].title);
+        });
     });
   });
-
 });

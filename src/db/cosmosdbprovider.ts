@@ -1,7 +1,7 @@
 import { DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument } from "documentdb";
 import { inject, injectable, named } from "inversify";
 import { ITelemProvider } from "../telem/itelemprovider";
-import { DateUtilities } from "../utilities/utilities";
+import { DateUtilities } from "../utilities/dateUtilities";
 
 /**
  * Handles executing queries against CosmosDB
