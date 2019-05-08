@@ -1,6 +1,7 @@
 import { DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument } from "documentdb";
 import { inject, injectable, named } from "inversify";
 import { ITelemProvider } from "../telem/itelemprovider";
+import { DateUtilities } from "../utilities/utilities";
 
 /**
  * Handles executing queries against CosmosDB
@@ -59,15 +60,16 @@ export class CosmosDBProvider {
         return new Promise((resolve, reject) => {
             const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
 
+            // Utilities object to calculate values
+            const dateMetricsUtility = new DateUtilities();
+
             // Get the timestamp immediately before the call to queryDocuments
-            const queryStartDateTime = new Date();
-            const queryStartTimeMs = queryStartDateTime.getTime();
+            const queryStartTimeMs = dateMetricsUtility.getTimestamp();
 
             this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results) => {
 
                 // Get the timestamp for when the query completes
-                const queryEndDateTime = new Date();
-                const queryEndTimeMs = queryEndDateTime.getTime();
+                const queryEndTimeMs = dateMetricsUtility.getTimestamp();
 
                 // Calculate query duration = difference between end and start timestamps
                 const queryDurationMs = queryEndTimeMs - queryStartTimeMs;
