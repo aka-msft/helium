@@ -76,7 +76,7 @@ export class MovieController implements interfaces.Controller {
         // TODO (seusher): Add validation based on the model
         const result = await this.cosmosDb.upsertDocument(database, collection, req.body);
 
-        return res.send(200, result);
+        return res.send(201, result);
     }
 
     /**

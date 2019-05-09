@@ -40,7 +40,7 @@ describe("Testing Movie Controller Methods", () => {
     .send(testMovie)
     .then((res) => {
 
-      chai.expect(res).to.have.status(200);
+      chai.expect(res).to.have.status(201);
       return chai.request(server)
         .get(`/api/movies/${randomString}`)
         .then((getResponse) => {

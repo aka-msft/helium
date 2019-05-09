@@ -82,6 +82,6 @@ export class ActorController implements interfaces.Controller {
         this.telem.trackEvent("createActor endpoint");
         // TODO (seusher): Add validation based on the model
         const result = await this.cosmosDb.upsertDocument(database, collection, req.body);
-        return res.send(200, result);
+        return res.send(201, result);
     }
 }

@@ -2,9 +2,12 @@
  * Utilities for numbers.
  */
 export class NumberUtilities {
-    // get random generated number
+
+    private randomNumberMax = 10000;
+
+    // Get a random number between 0 and randomNumberMax
     public getRandomNumber(): number {
-        const randomNumber = Math.floor(Math.random() * 2000);
+        const randomNumber = Math.floor(Math.random() * this.randomNumberMax);
         return randomNumber;
     }
 }

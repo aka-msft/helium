@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 
 describe("Testing Genre Controller Methods", () => {
 
-  it("Testing /api/genres", async () => {
+  it("Testing GET /api/genres", async () => {
     const queryGenre = "Fantasy";
     return chai.request(server)
     .get(`/api/genres`)
