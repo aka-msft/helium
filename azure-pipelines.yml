@@ -9,21 +9,26 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
+variables:
+- group: HeliumKV
+
 steps:
 - task: DockerInstaller@0
   inputs:
     dockerVersion: '17.09.0-ce'
-- task: AzureCLI@1
-  inputs:
-    azureSubscription: 'CSE Dev Crews Americas West (7060bca0-7a3c-44bd-b54c-4bb1e9facfac)'
-    scriptLocation: 'inlineScript'
-    inlineScript: 'az acr login --name heliumintacr'
 - script: |
+    cd docker
+    sed s/@@1@@/$(clientID)/ helium-release.env.template > helium-release.env.2
+    sed s/@@2@@/$(password)/ helium-release.env.2 > helium-release.env.3
+    sed s/@@3@@/$(tenantID)/ helium-release.env.3 > helium-release.env
+    rm helium-release.env.2
+    rm helium-release.env.3
+    cd ..
+    docker-compose build
+    docker-compose up --abort-on-container-exit
+  displayName: 'docker compose integration tests'
+- script: |
+    docker login heliumintacr.azurecr.io -u $(clientID) -p $(password)
     docker build --target=release -t heliumintacr.azurecr.io/helium:canary .
     docker push heliumintacr.azurecr.io/helium:canary
   displayName: 'dockerize and push to ACR'
-- script: |
-    sleep 2m
-    docker build --build-arg integration_server_url=https://heliumint.azurewebsites.net --target=integration -t  testhelium:canary .
-    docker run -i -p 3000:3000 testhelium:canary
-  displayName: 'sleep 2m & then build integration tests and test'
