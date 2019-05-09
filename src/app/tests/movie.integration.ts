@@ -1,9 +1,9 @@
 import * as chai from "chai";
 import chaiHttp = require("chai-http");
 import "mocha";
+import { integrationServer } from "../../config/constants";
 import { StringUtilities } from "../../utilities/stringUtilities";
 
-const server = process.env.integration_server_url;
 const stringUtil = new StringUtilities();
 
 chai.use(chaiHttp);
@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 describe("Testing Movie Controller Methods", () => {
 
   it("Testing GET /api/movies", async () => {
-    return chai.request(server)
+    return chai.request(integrationServer)
     .get(`/api/movies`)
     .then((res) => {
       chai.expect(res).to.have.status(200);
@@ -34,15 +34,15 @@ describe("Testing Movie Controller Methods", () => {
   };
 
   it("Testing POST + GET /api/movies/:id", async () => {
-    return chai.request(server)
+    return chai.request(integrationServer)
     .post("/api/movies")
     .set("content-type", "application/json")
     .send(testMovie)
     .then((res) => {
 
       chai.expect(res).to.have.status(201);
-      return chai.request(server)
-        .get(`/api/movies/${randomString}`)
+      return chai.request(integrationServer)
+      .get(`/api/movies/${randomString}`)
         .then((getResponse) => {
           chai.expect(getResponse).to.have.status(200);
           const getRespBody = getResponse.body;

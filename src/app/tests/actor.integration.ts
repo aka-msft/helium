@@ -1,9 +1,9 @@
 import * as chai from "chai";
 import chaiHttp = require("chai-http");
 import "mocha";
+import { integrationServer } from "../../config/constants";
 import { NumberUtilities } from "../../utilities/numberUtilities";
 
-const server = process.env.integration_server_url;
 const numUtility = new NumberUtilities();
 
 chai.use(chaiHttp);
@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 describe("Testing Actor Controller Methods", () => {
 
   it("Testing GET /api/actors", async () => {
-    return chai.request(server)
+    return chai.request(integrationServer)
       .get(`/api/actors`)
       .then((res) => {
         chai.expect(res).to.have.status(200);
@@ -23,22 +23,22 @@ describe("Testing Actor Controller Methods", () => {
   it("Testing POST + GET /api/actors/:id", async () => {
     const randomNumber = numUtility.getRandomNumber();
     const actor = {
-      actorId: "${randomNumber}",
-      type: "Actor",
-// tslint:disable-next-line: object-literal-sort-keys
-      name: "someName",
+      actorId: `${randomNumber}`,
       birthYear: 1997,
+      movies: [],
+      name: "someName",
       profession: ["actor"],
+      type: "Actor",
     };
 
-    chai.request(server)
+    return chai.request(integrationServer)
       .post("/api/actors")
       .set("content-type", "application/json")
       .send(actor)
       .then((res) => {
         chai.expect(res).to.have.status(201);
-        return chai.request(server)
-          .get(`/api/actors/${randomNumber}`)
+        return chai.request(integrationServer)
+        .get(`/api/actors/${randomNumber}`)
           .then((getResponse) => {
             chai.expect(getResponse).to.have.status(200);
             const body = getResponse.body;

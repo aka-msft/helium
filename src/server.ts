@@ -29,8 +29,6 @@ import { AppInsightsProvider } from "./telem/telemProvider";
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
     iocContainer.bind<string>("string").toConstantValue(config.insightsKey).whenTargetNamed("instrumentationKey");
 
-    // Not sure this will work before the server gets started
-
     const port = process.env.PORT || 3000;
 
     // create restify server
