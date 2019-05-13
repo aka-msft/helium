@@ -1,3 +1,4 @@
+import Joi = require("@hapi/joi");
 import { DocumentQuery } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
@@ -11,6 +12,18 @@ import { ITelemProvider } from "../../telem/itelemprovider";
 @Controller("/api/movies")
 @injectable()
 export class MovieController implements interfaces.Controller {
+
+    private static schema = Joi.object().keys({
+        id: Joi.string().required(),
+        movieId: Joi.string().required(),
+        textSearch: Joi.string().when("title",
+            {
+                is: Joi.string().regex(/^(?!\s*$).+/).required(), // Matches strings that aren't empty or whitespace
+                then: Joi.valid(Joi.ref("$title")).required(),
+            }),
+        title: Joi.string().required(),
+        type: Joi.string().valid("Movie").required(),
+    }).unknown(); // unknown allows keys to exist in the object that aren't described in the schema above
 
     constructor(
         @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
@@ -73,10 +86,30 @@ export class MovieController implements interfaces.Controller {
 
         this.telem.trackEvent("create movie");
 
-        // TODO (seusher): Add validation based on the model
-        const result = await this.cosmosDb.upsertDocument(database, collection, req.body);
+        // Return validation result
+        const validation = Joi.validate(req.body, MovieController.schema,
+            {
+                abortEarly: false,
+                context:
+                {
+                    title: req.body.title !== undefined ? req.body.title.toLowerCase() : "",
+                },
+            });
 
-        return res.send(201, result);
+        // result.error === null -> valid
+        if (validation.error === null) {
+            const result = await this.cosmosDb.upsertDocument(database, collection, req.body);
+
+            return res.send(201, result);
+        } else {
+            return res.send(400,
+                {
+                    message: validation.error.details.map((err) => err.context.key === "textSearch"
+                        ? `"textSearch" must be equal to "${req.body.title.toLowerCase()}"`
+                        : err.message),
+                    status: 400,
+                });
+        }
     }
 
     /**

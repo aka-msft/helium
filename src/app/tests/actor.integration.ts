@@ -25,9 +25,11 @@ describe("Testing Actor Controller Methods", () => {
     const actor = {
       actorId: `${randomNumber}`,
       birthYear: 1997,
+      id: `${randomNumber}`,
       movies: [],
       name: "someName",
       profession: ["actor"],
+      textSearch: "somename",
       type: "Actor",
     };
 

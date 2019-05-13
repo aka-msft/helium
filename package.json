@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/Microsoft/helium#readme",
   "dependencies": {
+    "@hapi/joi": "^15.0.2",
     "@types/body-parser": "^1.17.0",
     "@types/documentdb": "^1.10.5",
     "@types/restify": "^7.2.9",
