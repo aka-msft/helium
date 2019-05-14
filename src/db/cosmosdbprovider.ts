@@ -60,16 +60,13 @@ export class CosmosDBProvider {
         return new Promise((resolve, reject) => {
             const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
 
-            // Utilities object to calculate values
-            const dateMetricsUtility = new DateUtilities();
-
             // Get the timestamp immediately before the call to queryDocuments
-            const queryStartTimeMs = dateMetricsUtility.getTimestamp();
+            const queryStartTimeMs = DateUtilities.getTimestamp();
 
             this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results) => {
 
                 // Get the timestamp for when the query completes
-                const queryEndTimeMs = dateMetricsUtility.getTimestamp();
+                const queryEndTimeMs = DateUtilities.getTimestamp();
 
                 // Calculate query duration = difference between end and start timestamps
                 const queryDurationMs = queryEndTimeMs - queryStartTimeMs;

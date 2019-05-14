@@ -3,7 +3,7 @@
  */
 export class DateUtilities {
 
-    public getTimestamp(): number {
-        return new Date().getTime();
+    public static getTimestamp(): number {
+        return Date.now();
     }
 }

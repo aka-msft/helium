@@ -4,8 +4,6 @@ import "mocha";
 import { integrationServer } from "../../config/constants";
 import { NumberUtilities } from "../../utilities/numberUtilities";
 
-const numUtility = new NumberUtilities();
-
 chai.use(chaiHttp);
 
 describe("Testing Actor Controller Methods", () => {
@@ -21,7 +19,7 @@ describe("Testing Actor Controller Methods", () => {
   });
 
   it("Testing POST + GET /api/actors/:id", async () => {
-    const randomNumber = numUtility.getRandomNumber();
+    const randomNumber = NumberUtilities.getRandomNumber();
     const actor = {
       actorId: `${randomNumber}`,
       birthYear: 1997,

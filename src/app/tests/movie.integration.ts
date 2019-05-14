@@ -4,8 +4,6 @@ import "mocha";
 import { integrationServer } from "../../config/constants";
 import { StringUtilities } from "../../utilities/stringUtilities";
 
-const stringUtil = new StringUtilities();
-
 chai.use(chaiHttp);
 
 describe("Testing Movie Controller Methods", () => {
@@ -21,7 +19,7 @@ describe("Testing Movie Controller Methods", () => {
   });
 
   it("Testing POST + GET /api/movies/:id", async () => {
-    const randomString = stringUtil.getRandomString();
+    const randomString = StringUtilities.getRandomString();
 
     const testMovie = {
       genres: [],
@@ -56,7 +54,7 @@ describe("Testing Movie Controller Methods", () => {
   });
 
   it("Testing POST + GET /api/movies?q=<name>", async () => {
-    const randomString = stringUtil.getRandomString();
+    const randomString = StringUtilities.getRandomString();
 
     const testMovie = {
       id: randomString,
