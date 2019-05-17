@@ -6,6 +6,7 @@ import {
     NotEquals,
     validate,
     ValidateIf,
+    ValidationArguments,
     ValidationError,
 } from "class-validator";
 import { IsEqualToProperty } from "../../utilities/validationUtilities";
@@ -25,7 +26,13 @@ export class Actor implements IValidatable {
     @ValidateIf((x) => x.name !== undefined)
     @IsEqualToProperty("name", (x) => (x as string).toLowerCase(),
         {
-            message: "textSearch must equal the lowercase version of 'name'",
+            message: (args: ValidationArguments) => {
+                if ((args.object as Actor).name !== undefined) {
+                    return `textSearch must be equal to ${(args.object as Actor).name.toLowerCase()}`;
+                } else {
+                    return `textSearch must equal the lowercased version of the object's ${args.targetName} property`;
+                }
+            },
         })
     @IsLowercase()
     public textSearch: string;
