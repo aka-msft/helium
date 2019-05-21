@@ -4,6 +4,7 @@ import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
 import { Request } from "restify";
 import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
+import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { Actor } from "../models/actor";
 
@@ -16,9 +17,11 @@ export class ActorController implements interfaces.Controller {
 
     constructor(
         @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-        @inject("ITelemProvider") private telem: ITelemProvider) {
+        @inject("ITelemProvider") private telem: ITelemProvider,
+        @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
+        this.logger = logger;
     }
 
     /**
@@ -30,7 +33,6 @@ export class ActorController implements interfaces.Controller {
     public async getAll(req: Request, res) {
 
         this.telem.trackEvent("get all actors");
-
         const querySpec = {
             parameters: [],
             query: `SELECT root.actorId,

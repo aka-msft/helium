@@ -42,6 +42,7 @@ export class CosmosDBProvider {
         });
         this.url = url;
         this.telem = telem;
+
     }
 
     /**

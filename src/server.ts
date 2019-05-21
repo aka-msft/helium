@@ -9,6 +9,8 @@ import { MovieController } from "./app/controllers/movie";
 import { SystemController } from "./app/controllers/system";
 import { CosmosDBProvider } from "./db/cosmosdbprovider";
 import { IDatabaseProvider } from "./db/idatabaseprovider";
+import { BunyanLogger } from "./logging/bunyanLogProvider";
+import { ILoggingProvider } from "./logging/iLoggingProvider";
 import { KeyVaultProvider } from "./secrets/keyvaultprovider";
 import { ITelemProvider } from "./telem/itelemprovider";
 import { AppInsightsProvider } from "./telem/telemProvider";
@@ -27,6 +29,7 @@ import { AppInsightsProvider } from "./telem/telemProvider";
     iocContainer.bind<string>("string").toConstantValue(config.cosmosDbUrl).whenTargetNamed("cosmosDbUrl");
     iocContainer.bind<string>("string").toConstantValue(config.cosmosDbKey).whenTargetNamed("cosmosDbKey");
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
+    iocContainer.bind<ILoggingProvider>("ILoggingProvider").to(BunyanLogger).inSingletonScope();
     iocContainer.bind<string>("string").toConstantValue(config.insightsKey).whenTargetNamed("instrumentationKey");
 
     const port = process.env.PORT || 3000;
@@ -34,8 +37,8 @@ import { AppInsightsProvider } from "./telem/telemProvider";
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
     const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
+    const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
     telem.trackEvent("server start");
-
     // listen for requests
     telem.trackEvent("Listening for requests");
     server.setConfig((app) => {

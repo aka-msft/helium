@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
 import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
+import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { Movie } from "../models/movie";
 
@@ -15,9 +16,11 @@ export class MovieController implements interfaces.Controller {
 
     constructor(
         @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-        @inject("ITelemProvider") private telem: ITelemProvider) {
+        @inject("ITelemProvider") private telem: ITelemProvider,
+        @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
+        this.logger = logger;
     }
 
     /**
@@ -28,7 +31,6 @@ export class MovieController implements interfaces.Controller {
     public async getAll(req, res) {
 
         this.telem.trackEvent("get all movies");
-
         let querySpec: DocumentQuery;
 
         // Movie name is an optional query param.

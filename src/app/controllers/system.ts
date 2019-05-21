@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces } from "inversify-restify-utils";
 import { database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
+import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 
 /**
@@ -13,9 +14,11 @@ import { ITelemProvider } from "../../telem/itelemprovider";
 export class SystemController implements interfaces.Controller {
 
     constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-                @inject("ITelemProvider") private telem: ITelemProvider) {
+                @inject("ITelemProvider") private telem: ITelemProvider,
+                @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
+        this.logger = logger;
     }
 
     /**
@@ -24,7 +27,6 @@ export class SystemController implements interfaces.Controller {
     @Get("/")
     public async healthcheck(req, res) {
         this.telem.trackEvent("healthcheck called");
-
         const querySpec: DocumentQuery = {
             parameters: [],
             query: "SELECT * FROM root",
