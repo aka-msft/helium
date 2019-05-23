@@ -35,7 +35,7 @@ export class SystemController implements interfaces.Controller {
         try {
             const results = await this.cosmosDb.queryCollections(database, querySpec);
         } catch (e) {
-            return res.send(500, { message: "Application failed to reach database" });
+            return res.send(500, { message: "Application failed to reach database: " + e });
         }
 
         return res.send(200, { message: "Successfully reached healthcheck endpoint" });

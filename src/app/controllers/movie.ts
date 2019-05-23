@@ -1,4 +1,4 @@
-import { DocumentQuery } from "documentdb";
+import { DocumentQuery, RetrievedDocument } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
 import { collection, database } from "../../db/dbconstants";
@@ -6,6 +6,7 @@ import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { Movie } from "../models/movie";
+import { statusBadRequest, statusCreated, statusInternalServerError, statusOK } from "./constants";
 
 /**
  * controller implementation for our movies endpoint
@@ -60,12 +61,19 @@ export class MovieController implements interfaces.Controller {
             };
         }
 
-        const results = await this.cosmosDb.queryDocuments(database,
+        let resCode = statusOK;
+        let results: RetrievedDocument[];
+        try {
+          results = await this.cosmosDb.queryDocuments(
+            database,
             collection,
             querySpec,
-            { enableCrossPartitionQuery: true });
-
-        return res.send(200, results);
+            { enableCrossPartitionQuery: true },
+          );
+        } catch (err) {
+          resCode = statusInternalServerError;
+        }
+        return res.send(resCode, results);
     }
 
     /**
@@ -81,17 +89,28 @@ export class MovieController implements interfaces.Controller {
 
         movie.validate().then(async (errors) => {
             if (errors.length > 0) {
-                return res.send(400,
+                return res.send(statusBadRequest,
                     {
                         message: [].concat.apply([], errors.map((x) =>
                             Object.values(x.constraints))),
-                        status: 400,
+                        status: statusBadRequest,
                     });
             }
         });
 
-        const result = await this.cosmosDb.upsertDocument(database, collection, req.body);
-        return res.send(201, result);
+        // upsert document, catch errors
+        let resCode: number = statusCreated;
+        let result: RetrievedDocument;
+        try {
+          result = await this.cosmosDb.upsertDocument(
+            database,
+            collection,
+            req.body,
+          );
+        } catch (err) {
+          resCode = statusInternalServerError;
+        }
+        return res.send(resCode, result);
     }
 
     /**
@@ -117,11 +136,18 @@ export class MovieController implements interfaces.Controller {
         };
 
         // movieId isn't the partition key, so any search on it will require a cross-partition query.
-        const results = await this.cosmosDb.queryDocuments(database,
+        let resCode = statusOK;
+        let results: RetrievedDocument[];
+        try {
+          results = await this.cosmosDb.queryDocuments(
+            database,
             collection,
             querySpec,
-            { enableCrossPartitionQuery: true });
-
-        return res.send(200, results);
+            { enableCrossPartitionQuery: true },
+          );
+        } catch (err) {
+          resCode = statusInternalServerError;
+        }
+        return res.send(resCode, results);
     }
 }
