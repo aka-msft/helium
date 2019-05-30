@@ -3,6 +3,11 @@ variable "resource_group_name" {
   type        = "string"
 }
 
+variable "resource_group_location" {
+  description = "The deployment location of resource group container all the resources"
+  default     = "eastus"
+}
+
 variable "service_plan_name" {
   description = "The name of the service plan to be deployed."
   type        = "string"
