@@ -26,6 +26,16 @@ export class CosmosDBProvider {
         return `/dbs/${database}/colls/${collection}`;
     }
 
+    /**
+     * Builds a document link. Generates this over querying CosmosDB for performance reasons.
+     * @param database The name of the database the collection is in.
+     * @param collection The name of the collection.
+     * @param document The id of the document.
+     */
+    private static _buildDocumentLink(database: string, collection: string, document: string): string {
+        return `/dbs/${database}/colls/${collection}/docs/${document}`;
+    }
+
     private docDbClient: DocumentClient;
 
     /**
@@ -102,6 +112,36 @@ export class CosmosDBProvider {
                     reject(`${err.code}: ${err.body}`);
                 }
             });
+        });
+    }
+
+    /**
+     * Delete the given document.
+     * @param database The database the document is in.
+     * @param collection The collection the document is in.
+     * @param document ID of document to be deleted.
+     * @param options Optional options, not currently implemented.
+     */
+    public async deleteDocument(
+        database: string,
+        collection: string,
+        document: string,
+        options?: FeedOptions): Promise<string> {
+
+        // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
+        return new Promise((resolve, reject) => {
+            const documentLink = CosmosDBProvider._buildDocumentLink(database, collection, document);
+
+            this.docDbClient.deleteDocument(
+                documentLink,
+                {partitionKey: "0"},
+                (err) => {
+                    if (err) {
+                        reject(`${err.code}: ${err.body}`);
+                    } else {
+                        resolve("done");
+                    }
+                });
         });
     }
 

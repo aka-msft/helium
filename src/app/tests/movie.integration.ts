@@ -40,7 +40,7 @@ describe("Testing Movie Controller Methods", () => {
     .then((res) => {
 
       chai.expect(res).to.have.status(201);
-      return chai.request(integrationServer)
+      chai.request(integrationServer)
       .get(`/api/movies/${randomString}`)
         .then((getResponse) => {
           chai.expect(getResponse).to.have.status(200);
@@ -74,7 +74,7 @@ describe("Testing Movie Controller Methods", () => {
     .then((res) => {
 
       chai.expect(res).to.have.status(201);
-      return chai.request(integrationServer)
+      chai.request(integrationServer)
       .get(`/api/movies`)
       .query({q: randomString})
         .then((getResponse) => {
@@ -87,5 +87,41 @@ describe("Testing Movie Controller Methods", () => {
           chai.assert.equal(randomString, getRespBody[0].title);
         });
     });
+  });
+
+  it("Testing POST + DELETE + GET /api/movies", async () => {
+    const randomString = StringUtilities.getRandomString();
+
+    const testMovie = {
+      genres: [],
+      id: randomString,
+      key: "0",
+      movieId: randomString,
+      roles: [],
+      runtime: 120,
+      textSearch: randomString.toLowerCase(),
+      title: randomString,
+      type: "Movie",
+      year: 1994,
+    };
+
+    return chai.request(integrationServer)
+      .post("/api/movies")
+      .set("content-type", "application/json")
+      .send(testMovie)
+      .then((res) => {
+        chai.expect(res).to.have.status(201);
+        const delReq = chai.request(integrationServer);
+        delReq.del(`/api/movies/${randomString}`).set("content-type", "application/json").then((getResponse) => {
+          chai.expect(getResponse).to.have.status(200);
+          chai.expect(getResponse.body).to.equal("deleted");
+          chai.request(integrationServer)
+            .get(`/api/movies/${randomString}`)
+              .then((getRes) => {
+                chai.expect(getRes).to.have.status(404);
+              });
+
+        });
+      });
   });
 });

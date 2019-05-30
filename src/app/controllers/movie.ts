@@ -1,6 +1,6 @@
 import { DocumentQuery, RetrievedDocument } from "documentdb";
 import { inject, injectable } from "inversify";
-import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
+import { Controller, Delete, Get, interfaces, Post } from "inversify-restify-utils";
 import { httpStatus } from "../../config/constants";
 import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
@@ -183,6 +183,37 @@ export class MovieController implements interfaces.Controller {
             );
         } catch (err) {
             resCode = httpStatus.InternalServerError;
+        }
+        return res.send(resCode, result);
+    }
+
+    /**
+     * Delete a single movie by movie ID.
+     */
+    @Delete("/:id")
+    public async deleteMovieById(req, res) {
+
+        const movieId = req.params.id;
+
+        this.telem.trackEvent("delete movie by id");
+
+        // movieId isn't the partition key, so any search on it will require a cross-partition query.
+        let resCode = httpStatus.OK;
+        let result = "deleted";
+        try {
+          await this.cosmosDb.deleteDocument(
+            database,
+            collection,
+            movieId,
+          );
+        } catch (err) {
+          if (err.toString().includes("NotFound")) {
+            resCode = httpStatus.NotFound;
+            result = "A Movie with that ID does not exist";
+            } else {
+            resCode = httpStatus.InternalServerError;
+            result = err.toString();
+          }
         }
         return res.send(resCode, result);
     }
