@@ -1,0 +1,96 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - /infra/modules/*
+    - /infra/templates/*
+    - /test/*
+    exclude:
+    - devops/*
+    - design-reference/*
+    - /**/*.md
+    - /test/docker/*
+pr:
+  autoCancel: false
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - /infra/modules/*
+    - /infra/templates/*
+    - /test/*
+    exclude:
+    - devops/*
+    - design-reference/*
+    - /**/*.md
+    - /test/docker/*
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+variables:
+- group: "KV Secrets"
+- name: GO_VERSION
+  value: '1.11'
+- name: TF_VERSION
+  value: '0.11.13'
+- name: TEST_HARNESS_BASE_IMAGE_TAG
+  value: 'g$(GO_VERSION)t$(TF_VERSION)'
+- name: TEST_HARNESS_BASE_IMAGE
+  value: 'msftcse/cobalt-test-base'
+- name: BUILD_TEST_RUN_IMAGE
+  value: 'infra-test-harness'
+- name: TERM
+  value: 'xterm-color'
+
+steps:
+- checkout: self
+  persistCredentials: true
+  clean: true
+
+- script: |
+    docker login $ACR_HOST -u $ACR_USERNAME -p $(DOCKER-PASSWORD)
+  displayName: 'Docker Login'
+
+- script: |
+    BASE_IMAGE=$ACR_HOST/$TEST_HARNESS_BASE_IMAGE:$TEST_HARNESS_BASE_IMAGE_TAG
+    echo "BASE_IMAGE: $BASE_IMAGE"
+    MASTER="remotes/origin/master"
+    GIT_DIFF_SOURCEBRANCH="HEAD"
+
+    # we should always use master as a comparison, except in the case that this is
+    # a build for master. In this case we can use HEAD~ (1 commit behind master)
+    # because all merges will be squash merges
+    if [[ $(git diff "$MASTER") ]]; then
+        GIT_DIFF_UPSTREAMBRANCH="$MASTER"
+    else
+        GIT_DIFF_UPSTREAMBRANCH="$MASTER~"
+    fi
+
+    echo "GIT_DIFF_UPSTREAMBRANCH: $GIT_DIFF_UPSTREAMBRANCH"
+    echo "GIT_DIFF_SOURCEBRANCH: $GIT_DIFF_SOURCEBRANCH"
+
+    . ./test-harness/init.sh --source-only
+ 
+    build_test_harness $GIT_DIFF_UPSTREAMBRANCH \
+                       $GIT_DIFF_SOURCEBRANCH \
+                       $BASE_IMAGE
+  displayName: 'Determine integration tests based off branch changes and load build path'
+
+- script: |
+    if test ! -z "$(docker images -q ${BUILD_TEST_RUN_IMAGE}:${BUILD_BUILDID})"; then
+        docker run -e ARM_SUBSCRIPTION_ID=$(AD-SP-SUBSCRIPTION-ID) \
+            -e ARM_CLIENT_ID=$(AD-SP-CLIENT-ID) \
+            -e ARM_CLIENT_SECRET=$(AD-SP-SECRET) \
+            -e ARM_TENANT_ID=$(AD-SP-TENANT-ID) \
+            -e DATACENTER_LOCATION=$DATACENTER_LOCATION \
+            -e TF_VAR_remote_state_account=$(TF_VAR_remote_state_account) \
+            -e TF_VAR_remote_state_container=$(TF_VAR_remote_state_container) \
+            -e ARM_ACCESS_KEY=$(ARM-ACCESS-KEY) \
+            --rm $BUILD_TEST_RUN_IMAGE:$BUILD_BUILDID
+    fi
+  displayName: 'run the test harness container which deploys, validates and tears down modified terraform templates'
