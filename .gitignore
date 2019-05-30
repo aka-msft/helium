@@ -1,6 +1,7 @@
 node_modules
 dist
 *.env
+swagger.json
 ### OSX ###
 # General
 .DS_Store

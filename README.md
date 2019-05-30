@@ -143,3 +143,9 @@ docker-compose up # Builds, (re)creates, starts, and attaches to containers for 
 OR
 docker-compose up --abort-on-container-exit # Stops all containers if one container exits
 ```
+
+## Documentation
+
+### REST Endpoints
+
+The REST endpoints are documented using the apiDoc standard (http://apidocjs.com/#params), which allows for swagger.json documentation generation.

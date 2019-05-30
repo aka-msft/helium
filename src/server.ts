@@ -38,6 +38,7 @@ import { AppInsightsProvider } from "./telem/telemProvider";
     const server = new InversifyRestifyServer(iocContainer);
     const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
     const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
+
     telem.trackEvent("server start");
     // listen for requests
     telem.trackEvent("Listening for requests");
@@ -46,16 +47,27 @@ import { AppInsightsProvider } from "./telem/telemProvider";
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(restify.plugins.queryParser({ mapParams: false }));
         app.use(bodyParser.json());
-        // define a simple route
-        app.get("/", (req, res) => {
-            res.json({ message: "Welcome to the MovieInfo reference application." });
-        });
+
+        app.get("/", restify.plugins.serveStatic({
+            default: "index.html",
+            directory: __dirname + "/static",
+        }));
+
+        app.get("/swagger.json", restify.plugins.serveStatic({
+            directory: __dirname,
+            file: "swagger.json",
+        }));
+
+        app.get("/node_modules/*", restify.plugins.serveStatic({
+            directory: __dirname + "/..",
+        }));
+
     }).build().listen(port, () => {
         console.log("Server is listening on port " + port);
     });
 })();
 
-export async function getConfigValues(): Promise<{cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string}> {
+export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string }> {
 
     // cosmosDbKey comes from KeyVault or env var
     let cosmosDbKey: string;

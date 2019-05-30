@@ -1,6 +1,7 @@
 import { DocumentQuery } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces } from "inversify-restify-utils";
+import { httpStatus } from "../../config/constants";
 import { database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
@@ -22,7 +23,26 @@ export class SystemController implements interfaces.Controller {
     }
 
     /**
-     * tells external services if the service is running
+     * @api {get} /api/healthz Health Check
+     * @apiName GetHealthCheck
+     * @apiGroup System
+     *
+     * @apiDescription
+     * Tells external services if the service is running.
+     *
+     * @apiError InternalServerError An error was thrown while trying to query the database
+     *
+     * @apiErrorExample {json} Error Response:
+     *     HTTP/1.1 500 Internal Server Error
+     *     {
+     *       message: "Application failed to reach database: <code>e</code>"
+     *     }
+     *
+     * @apiSuccessExample {json} Success Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       message: "Successfully reached healthcheck endpoint",
+     *     }
      */
     @Get("/")
     public async healthcheck(req, res) {
@@ -35,9 +55,9 @@ export class SystemController implements interfaces.Controller {
         try {
             const results = await this.cosmosDb.queryCollections(database, querySpec);
         } catch (e) {
-            return res.send(500, { message: "Application failed to reach database: " + e });
+            return res.send(httpStatus.InternalServerError, { message: "Application failed to reach database: " + e });
         }
 
-        return res.send(200, { message: "Successfully reached healthcheck endpoint" });
+        return res.send(httpStatus.OK, { message: "Successfully reached healthcheck endpoint" });
     }
 }

@@ -11,7 +11,7 @@
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "test-unit": "mocha --reporter spec --compilers ts:ts-node/register '**/*.unit.ts'",
     "test-integration": "mocha --reporter spec --timeout 5000 --compilers ts:ts-node/register '**/*.integration.ts'",
-    "build": "gulp scripts",
+    "build": "gulp scripts && gulp content && node_modules/apidoc-swagger/bin/apidocSwagger.js -i src/app/controllers/ -o dist/ --markdown=false",
     "docker-build": "docker build -t helium:canary .",
     "docker-run": "docker run -it -p 8080:8080 helium:canary"
   },
@@ -42,15 +42,19 @@
     "restify": "^8.3.0",
     "restify-errors": "^7.0.0",
     "restify-plugins": "^1.6.0",
+    "swagger-ui-dist": "^3.22.2",
     "ts-node": "^3.3.0"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/chai-http": "0.0.29",
     "@types/mocha": "^2.2.32",
+    "apidoc": "^0.17.7",
+    "apidoc-swagger": "^0.3.0",
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "gulp": "^3.9.1",
+    "gulp-apidoc-swagger": "^0.2.2",
     "gulp-typescript": "^3.1.1",
     "mocha": "^3.1.2",
     "mocha-junit-reporter": "^1.22.0",
