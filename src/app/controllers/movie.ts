@@ -188,7 +188,14 @@ export class MovieController implements interfaces.Controller {
     }
 
     /**
-     * Delete a single movie by movie ID.
+     * @api {delete} /api/movies/:id Delete Movie
+     * @apiName DeleteMovie
+     * @apiGroup Movies
+     *
+     * @apiDescription
+     * Delete a movie.
+     *
+     * @apiParam (query) {String} id Movie's unique ID.
      */
     @Delete("/:id")
     public async deleteMovieById(req, res) {
