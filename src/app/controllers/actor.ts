@@ -61,7 +61,7 @@ export class ActorController implements interfaces.Controller {
     }
 
     /**
-     * @api {get} /api/actors/:id Request Actor information
+     * @api {get} /api/actors/ Request Actor information
      * @apiName GetActor
      * @apiGroup Actors
      *
