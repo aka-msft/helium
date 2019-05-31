@@ -38,7 +38,7 @@ export class GenreController implements interfaces.Controller {
 
         const querySpec = {
             parameters: [],
-            query: "SELECT root.id, root.type, root.genre FROM root where root.type = 'Genre'",
+            query: "SELECT VALUE root.id FROM root where root.type = 'Genre'",
         };
 
         let resCode = httpStatus.OK;

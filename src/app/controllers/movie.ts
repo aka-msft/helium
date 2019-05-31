@@ -146,7 +146,7 @@ export class MovieController implements interfaces.Controller {
      * @apiParam (body) {String} textSearch
      * @apiParam (body) {String} title
      * @apiParam (body) {String="Movie"} type
-     * @apiParam (body) {Number} [key]
+     * @apiParam (body) {String} [key]
      * @apiParam (body) {Number} [year]
      * @apiParam (body) {Number} [rating]
      * @apiParam (body) {Number} [votes]

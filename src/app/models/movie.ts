@@ -49,7 +49,7 @@ export class Movie implements IValidatable {
         movieId: string,
         title: string,
         textSearch: string,
-        public key?: number,
+        public key?: string,
         public year?: number,
         public rating?: number,
         public votes?: number,

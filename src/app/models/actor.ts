@@ -49,7 +49,7 @@ export class Actor implements IValidatable {
         actorId: string,
         name: string,
         textSearch: string,
-        public key?: number,
+        public key?: string,
         public birthYear?: number,
         public profession?: string[],
         public movies?: Movie[]) {

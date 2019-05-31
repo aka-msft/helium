@@ -30,13 +30,15 @@ export class SystemController implements interfaces.Controller {
      * @apiDescription
      * Tells external services if the service is running.
      *
-     * @apiError InternalServerError An error was thrown while trying to query the database
+     * @apiError (500 InternalServerError) InternalServerError An error was thrown while trying to query the database
      *
      * @apiErrorExample {json} Error Response:
      *     HTTP/1.1 500 Internal Server Error
      *     {
      *       message: "Application failed to reach database: <code>e</code>"
      *     }
+     *
+     * @apiSuccess (200 OK) {String} message The message
      *
      * @apiSuccessExample {json} Success Response:
      *     HTTP/1.1 200 OK
