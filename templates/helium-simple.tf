@@ -6,7 +6,6 @@ resource "azurerm_resource_group" "helium_resource" {
 module "service_plan" {
   source                  = "github.com/microsoft/cobalt/infra/modules/providers/azure/service-plan"
   resource_group_name     = "${azurerm_resource_group.helium_resource.name}"
-  resource_group_location = "${azurerm_resource_group.helium_resource.location}"
   service_plan_name       = "${var.service_plan_name}"
 }
 
@@ -14,7 +13,7 @@ module "app_insights" {
   source                               = "github.com/microsoft/cobalt/infra/modules/providers/azure/app-insights"
   service_plan_resource_group_name     = "${azurerm_resource_group.helium_resource.name}"
   appinsights_name                     = "${var.appinsights_name}"
-  application_type                     = "${var.appinsights_application_type}"
+  appinsights_application_type         = "${var.appinsights_application_type}"
   resource_tags                        = "${var.resource_tags}"
 }
 
