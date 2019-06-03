@@ -124,4 +124,44 @@ describe("Testing Movie Controller Methods", () => {
         });
       });
   });
+
+  it("Testing POST + PUT + GET /api/movies", async () => {
+    const randomString = StringUtilities.getRandomString();
+
+    const testMovie = {
+      genres: [],
+      id: randomString,
+      key: "0",
+      movieId: randomString,
+      roles: [],
+      runtime: 120,
+      textSearch: randomString.toLowerCase(),
+      title: randomString,
+      type: "Movie",
+      year: 1994,
+    };
+
+    return chai.request(integrationServer)
+      .post("/api/movies")
+      .set("content-type", "application/json")
+      .send(testMovie)
+      .then((res) => {
+        chai.expect(res).to.have.status(201);
+        testMovie.title = randomString + "1";
+        testMovie.textSearch = randomString + "1";
+        const putReq = chai.request(integrationServer);
+        putReq.put(`/api/movies/${randomString}`).set("content-type", "application/json").send(testMovie)
+        .then((getResponse) => {
+          chai.expect(getResponse).to.have.status(201);
+
+          chai.request(integrationServer)
+            .get(`/api/movies/${randomString}`)
+              .then((getRes) => {
+                chai.expect(getRes).to.have.status(200);
+                chai.expect(getRes.body.title).to.equal(`${randomString}1`);
+              });
+
+        });
+      });
+  });
 });

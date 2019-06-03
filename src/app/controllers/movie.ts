@@ -1,6 +1,6 @@
 import { DocumentQuery, RetrievedDocument } from "documentdb";
 import { inject, injectable } from "inversify";
-import { Controller, Delete, Get, interfaces, Post } from "inversify-restify-utils";
+import { Controller, Delete, Get, interfaces, Post, Put } from "inversify-restify-utils";
 import { httpStatus } from "../../config/constants";
 import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
@@ -84,14 +84,14 @@ export class MovieController implements interfaces.Controller {
     }
 
     /**
-     * @api {get} /api/movies/ Request Movie information
+     * @api {get} /api/movies/{id} Request Movie information
      * @apiName GetMovie
      * @apiGroup Movies
      *
      * @apiDescription
      * Retrieve and return a single movie by movie ID.
      *
-     * @apiParam (query) {String} id Movie's unique ID.
+     * @apiParam (path) {String} id Movie's unique ID.
      */
     @Get("/:id")
     public async getMovieById(req, res) {
@@ -107,8 +107,8 @@ export class MovieController implements interfaces.Controller {
                     value: movieId,
                 },
             ],
-            query: `SELECT root.movieId, root.type, root.title, root.year,
-            root.runtime, root.genres, root.roles
+            query: `SELECT root.id, root.movieId, root.type, root.title, root.year,
+            root.runtime, root.genres, root.roles, root.key
             FROM root where root.id = @id and root.type = 'Movie'`,
         };
 
@@ -188,14 +188,74 @@ export class MovieController implements interfaces.Controller {
     }
 
     /**
-     * @api {delete} /api/movies/ Delete Movie
+     * @api {put} /api/movies/{id} Update Movie
+     * @apiName PutMovie
+     * @apiGroup Movies
+     *
+     * @apiDescription
+     * Update a movie.
+     *
+     * @apiParam (body) {String} id
+     * @apiParam (body) {String} movieId
+     * @apiParam (body) {String} textSearch
+     * @apiParam (body) {String} title
+     * @apiParam (body) {String="Movie"} type
+     * @apiParam (body) {Number} [key]
+     * @apiParam (body) {Number} [year]
+     * @apiParam (body) {Number} [rating]
+     * @apiParam (body) {Number} [votes]
+     * @apiParam (body) {String[]} [genres]
+     * @apiParam (body) {Actor[]} [roles]
+     * @apiParam (path) {String} id Movie's unique ID.
+     */
+    @Put("/:id")
+    public async updateMovie(req, res) {
+
+        this.telem.trackEvent("create movie");
+
+        const movieId = req.params.id;
+
+        const movie: Movie = Object.assign(Object.create(Movie.prototype),
+            JSON.parse(JSON.stringify(req.body)));
+
+        movie.validate().then(async (errors) => {
+            if (errors.length > 0) {
+                return res.send(httpStatus.BadRequest,
+                    {
+                        message: [].concat.apply([], errors.map((x) =>
+                            Object.values(x.constraints))),
+                        status: httpStatus.BadRequest,
+                    });
+            }
+        });
+
+        // update movie id from url param
+        movie.id = movieId;
+
+        // upsert document, catch errors
+        let resCode: number = httpStatus.Created;
+        let result: RetrievedDocument;
+        try {
+            result = await this.cosmosDb.upsertDocument(
+                database,
+                collection,
+                movie,
+            );
+        } catch (err) {
+            resCode = httpStatus.InternalServerError;
+        }
+        return res.send(resCode, result);
+    }
+
+    /**
+     * @api {delete} /api/movies/{id} Delete Movie
      * @apiName DeleteMovie
      * @apiGroup Movies
      *
      * @apiDescription
      * Delete a movie.
      *
-     * @apiParam (query) {String} id Movie's unique ID.
+     * @apiParam (path) {String} id Movie's unique ID.
      */
     @Delete("/:id")
     public async deleteMovieById(req, res) {
