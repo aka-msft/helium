@@ -7,6 +7,7 @@ import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
+import { DateUtilities } from "../../utilities/dateUtilities";
 import { Actor } from "../models/actor";
 
 // Controller implementation for our actors endpoint
@@ -34,8 +35,9 @@ export class ActorController implements interfaces.Controller {
      */
     @Get("/")
     public async getAll(req: Request, res) {
-
-        this.telem.trackEvent("get all actors");
+        const apiStartTime = DateUtilities.getTimestamp();
+        const apiName = "Get all actors";
+        this.telem.trackEvent("API server: Endpoint called: " + apiName);
         const querySpec = {
             parameters: [],
             query: `SELECT root.actorId,
@@ -57,6 +59,14 @@ export class ActorController implements interfaces.Controller {
         } catch (err) {
             resCode = httpStatus.InternalServerError;
         }
+        const apiEndTime = DateUtilities.getTimestamp();
+        const apiDuration = apiEndTime - apiStartTime;
+
+        // Log API duration metric
+        const apiDurationMetricName = "API server: " + apiName + " duration";
+        const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
+        this.telem.trackMetric(apiMetric);
+
         return res.send(resCode, results);
     }
 
@@ -72,11 +82,11 @@ export class ActorController implements interfaces.Controller {
      */
     @Get("/:id")
     public async getActorById(req, res) {
-
+        const apiStartTime = DateUtilities.getTimestamp();
+        const apiName = "Get actor by Id";
         const actorId = req.params.id;
 
-        this.telem.trackEvent("get actor by id");
-
+        this.telem.trackEvent("API server: Endpoint called: " + apiName);
         const querySpec: DocumentQuery = {
             parameters: [
                 {
@@ -107,6 +117,13 @@ export class ActorController implements interfaces.Controller {
         if (!results || !results.length) {
             resCode = httpStatus.NotFound;
         }
+        const apiEndTime = DateUtilities.getTimestamp();
+        const apiDuration = apiEndTime - apiStartTime;
+
+        // Log API duration metric
+        const apiDurationMetricName = "API server: " + apiName + " duration";
+        const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
+        this.telem.trackMetric(apiMetric);
 
         return res.send(resCode, results);
 
@@ -132,7 +149,10 @@ export class ActorController implements interfaces.Controller {
      */
     @Post("/")
     public async createActor(req, res) {
-        this.telem.trackEvent("createActor endpoint");
+        const apiStartTime = DateUtilities.getTimestamp();
+        const apiName = "Post actor";
+
+        this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         const actor: Actor = Object.assign(Object.create(Actor.prototype),
             JSON.parse(JSON.stringify(req.body)));
@@ -160,6 +180,14 @@ export class ActorController implements interfaces.Controller {
         } catch (err) {
             resCode = httpStatus.InternalServerError;
         }
+        const apiEndTime = DateUtilities.getTimestamp();
+        const apiDuration = apiEndTime - apiStartTime;
+
+        // Log API duration metric
+        const apiDurationMetricName = "API server: " + apiName + " duration";
+        const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
+        this.telem.trackMetric(apiMetric);
+
         return res.send(resCode, result);
     }
 }

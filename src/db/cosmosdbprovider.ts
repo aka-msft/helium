@@ -1,5 +1,6 @@
 import { DocumentClient, DocumentQuery, FeedOptions, RetrievedDocument } from "documentdb";
 import { inject, injectable, named } from "inversify";
+import { ILoggingProvider } from "../logging/iLoggingProvider";
 import { ITelemProvider } from "../telem/itelemprovider";
 import { DateUtilities } from "../utilities/dateUtilities";
 
@@ -46,13 +47,13 @@ export class CosmosDBProvider {
     constructor(
         @inject("string") @named("cosmosDbUrl") private url: string,
         @inject("string") @named("cosmosDbKey") accessKey: string,
-        @inject("ITelemProvider") private telem: ITelemProvider) {
+        @inject("ITelemProvider") private telem: ITelemProvider,
+        @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.docDbClient = new DocumentClient(url, {
             masterKey: accessKey,
         });
         this.url = url;
         this.telem = telem;
-
     }
 
     /**
@@ -106,6 +107,15 @@ export class CosmosDBProvider {
                 // Track DependencyTelemetry for query
                 this.telem.trackDependency(dependencyTelem);
 
+                // Get an object to track query time metric
+                const metricTelem = this.telem.getMetricTelemetryObject(
+                    "CosmosDB: QueryDocuments Duration",
+                    queryDurationMs,
+                );
+
+                // Track CosmosDB query time metric
+                this.telem.trackMetric(metricTelem);
+
                 if (err == null) {
                     resolve(results);
                 } else {
@@ -132,6 +142,7 @@ export class CosmosDBProvider {
         return new Promise((resolve, reject) => {
             const documentLink = CosmosDBProvider._buildDocumentLink(database, collection, document);
 
+            const deleteStartTimeMs = DateUtilities.getTimestamp();
             this.docDbClient.deleteDocument(
                 documentLink,
                 {partitionKey: "0"},
@@ -142,6 +153,18 @@ export class CosmosDBProvider {
                         resolve("done");
                     }
                 });
+            const deleteEndTimeMs = DateUtilities.getTimestamp();
+
+            const deleteDuration = deleteEndTimeMs - deleteStartTimeMs;
+
+            // Get an object to track delete time metric
+            const metricTelem = this.telem.getMetricTelemetryObject(
+                "CosmosDB: deleteDocument Duration",
+                deleteDuration,
+            );
+
+            // Track CosmosDB query time metric
+            this.telem.trackMetric(metricTelem);
         });
     }
 
@@ -158,6 +181,7 @@ export class CosmosDBProvider {
         return new Promise((resolve, reject) => {
             const dbLink = CosmosDBProvider._buildDBLink(database);
 
+            const queryCollectionsStartTime = DateUtilities.getTimestamp();
             this.docDbClient.queryCollections(dbLink, query).toArray((err, results) => {
                 if (err == null) {
                     resolve(results);
@@ -165,6 +189,18 @@ export class CosmosDBProvider {
                     reject(`${err.code}: ${err.body}`);
                 }
             });
+            const queryCollectionsEndTime = DateUtilities.getTimestamp();
+
+            const queryCollectionsDuration = queryCollectionsEndTime - queryCollectionsStartTime;
+
+            // Get an object to track delete time metric
+            const metricTelem = this.telem.getMetricTelemetryObject(
+                "CosmosDB: queryCollections Duration",
+                queryCollectionsDuration,
+            );
+
+            // Track CosmosDB query time metric
+            this.telem.trackMetric(metricTelem);
         });
     }
 
@@ -178,6 +214,7 @@ export class CosmosDBProvider {
 
         // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
         return new Promise((resolve, reject) => {
+            const upsertDocumentStartTime = DateUtilities.getTimestamp();
             const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
             this.docDbClient.upsertDocument(collectionLink, content, (err, result) => {
                 if (err == null) {
@@ -186,6 +223,18 @@ export class CosmosDBProvider {
                     reject(err);
                 }
             });
+            const upsertDocumentEndTime = DateUtilities.getTimestamp();
+
+            const upsertDocumentDuration = upsertDocumentEndTime - upsertDocumentStartTime;
+
+            // Get an object to track upsertDocument time metric
+            const metricTelem = this.telem.getMetricTelemetryObject(
+                "CosmosDB: upsertDocument Duration",
+                upsertDocumentDuration,
+            );
+
+            // Track CosmosDB query time metric
+            this.telem.trackMetric(metricTelem);
         });
     }
 }

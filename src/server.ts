@@ -1,3 +1,4 @@
+import { telemetryTypeToBaseType } from "applicationinsights/out/Declarations/Contracts";
 import * as bodyParser from "body-parser";
 import { Container } from "inversify";
 import { interfaces, InversifyRestifyServer, TYPE } from "inversify-restify-utils";
@@ -12,14 +13,14 @@ import { IDatabaseProvider } from "./db/idatabaseprovider";
 import { BunyanLogger } from "./logging/bunyanLogProvider";
 import { ILoggingProvider } from "./logging/iLoggingProvider";
 import { KeyVaultProvider } from "./secrets/keyvaultprovider";
+import { AppInsightsProvider } from "./telem/appinsightsprovider";
 import { ITelemProvider } from "./telem/itelemprovider";
-import { AppInsightsProvider } from "./telem/telemProvider";
+import { DateUtilities } from "./utilities/dateUtilities";
 
 (async () => {
+    const iocContainer = new Container();
 
     const config = await getConfigValues();
-
-    const iocContainer = new Container();
 
     iocContainer.bind<interfaces.Controller>(TYPE.Controller).to(ActorController).whenTargetNamed("ActorController");
     iocContainer.bind<interfaces.Controller>(TYPE.Controller).to(GenreController).whenTargetNamed("GenreController");
@@ -28,20 +29,19 @@ import { AppInsightsProvider } from "./telem/telemProvider";
     iocContainer.bind<IDatabaseProvider>("IDatabaseProvider").to(CosmosDBProvider).inSingletonScope();
     iocContainer.bind<string>("string").toConstantValue(config.cosmosDbUrl).whenTargetNamed("cosmosDbUrl");
     iocContainer.bind<string>("string").toConstantValue(config.cosmosDbKey).whenTargetNamed("cosmosDbKey");
+    iocContainer.bind<string>("string").toConstantValue(config.insightsKey).whenTargetNamed("instrumentationKey");
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
     iocContainer.bind<ILoggingProvider>("ILoggingProvider").to(BunyanLogger).inSingletonScope();
-    iocContainer.bind<string>("string").toConstantValue(config.insightsKey).whenTargetNamed("instrumentationKey");
+
+    const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
+    const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
 
     const port = process.env.PORT || 3000;
 
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
-    const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
-    const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
 
-    telem.trackEvent("server start");
     // listen for requests
-    telem.trackEvent("Listening for requests");
     server.setConfig((app) => {
         // parse requests of content-type - application/x-www-form-urlencoded
         app.use(bodyParser.urlencoded({ extended: true }));
@@ -64,11 +64,11 @@ import { AppInsightsProvider } from "./telem/telemProvider";
 
     }).build().listen(port, () => {
         console.log("Server is listening on port " + port);
+        telem.trackEvent("API Server: Server started on port " + port);
     });
 })();
 
 export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string }> {
-
     // cosmosDbKey comes from KeyVault or env var
     let cosmosDbKey: string;
     // insightsKey comes from KeyVault or env var
@@ -101,11 +101,12 @@ export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDb
     // first try KeyVault, then env var
     if (!configFallback) {
         const keyVaultUrl = process.env.KEY_VAULT_URL;
-        const keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId);
 
+        const keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId);
         try {
             cosmosDbKey = await keyvault.getSecret("cosmosDBkey");
             insightsKey = await keyvault.getSecret("AppInsightsInstrumentationKey");
+
         } catch {
             console.log("Failed to get secrets from KeyVault. Falling back to env vars for secrets");
         }

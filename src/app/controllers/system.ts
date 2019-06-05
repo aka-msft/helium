@@ -6,6 +6,7 @@ import { database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
+import { DateUtilities } from "../../utilities/dateUtilities";
 
 /**
  * controller implementation for our system endpoint
@@ -48,7 +49,10 @@ export class SystemController implements interfaces.Controller {
      */
     @Get("/")
     public async healthcheck(req, res) {
-        this.telem.trackEvent("healthcheck called");
+        const apiStartTime = DateUtilities.getTimestamp();
+        const apiName = "Healthcheck";
+        this.telem.trackEvent("API server: Endpoint called: " + apiName);
+
         const querySpec: DocumentQuery = {
             parameters: [],
             query: "SELECT * FROM root",
@@ -59,6 +63,13 @@ export class SystemController implements interfaces.Controller {
         } catch (e) {
             return res.send(httpStatus.InternalServerError, { message: "Application failed to reach database: " + e });
         }
+        const apiEndTime = DateUtilities.getTimestamp();
+        const apiDuration = apiEndTime - apiStartTime;
+
+        // Log API duration metric
+        const apiDurationMetricName = "API server: " + apiName + " duration";
+        const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
+        this.telem.trackMetric(apiMetric);
 
         return res.send(httpStatus.OK, { message: "Successfully reached healthcheck endpoint" });
     }

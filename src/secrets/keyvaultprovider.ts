@@ -30,7 +30,6 @@ export class KeyVaultProvider {
         if (this.client == null) {
             await this._initialize();
         }
-
         // An empty string for 'secretVersion' returns the latest version
         const secret = await this.client.getSecret(this.url, name, "")
             .then((s) =>  (s.value) as string)

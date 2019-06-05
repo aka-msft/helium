@@ -7,6 +7,7 @@ import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
+import { DateUtilities } from "../../utilities/dateUtilities";
 
 /**
  * controller implementation for our genres endpoint
@@ -34,7 +35,9 @@ export class GenreController implements interfaces.Controller {
      */
     @Get("/")
     public async getAll(req: Request, res) {
-        this.telem.trackEvent("get all genres");
+        const apiStartTime = DateUtilities.getTimestamp();
+        const apiName = "Get all Genres";
+        this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         const querySpec = {
             parameters: [],
@@ -53,6 +56,13 @@ export class GenreController implements interfaces.Controller {
         } catch (err) {
           resCode = httpStatus.InternalServerError;
         }
+        const apiEndTime = DateUtilities.getTimestamp();
+        const apiDuration = apiEndTime - apiStartTime;
+
+        // Log API duration metric
+        const apiDurationMetricName = "API server: " + apiName + " duration";
+        const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
+        this.telem.trackMetric(apiMetric);
         return res.send(resCode, results);
     }
 }

@@ -1,3 +1,4 @@
+import { MetricTelemetry } from "applicationinsights/out/Declarations/Contracts";
 import { DependencyTelemetry } from "applicationinsights/out/Declarations/Contracts/TelemetryTypes/DependencyTelemetry";
 
 export interface ITelemProvider {
@@ -7,7 +8,9 @@ export interface ITelemProvider {
      */
     trackEvent(eventName: string): void;
 
-    trackDependency(dependency: DependencyTelemetry);
+    trackDependency(dependency: DependencyTelemetry): void;
+
+    trackMetric(metric: MetricTelemetry): void;
 
     getDependencyTrackingObject(
         dtn: string,
@@ -16,4 +19,8 @@ export interface ITelemProvider {
         rc: string,
         s: boolean,
         dur: number): DependencyTelemetry;
+
+    getMetricTelemetryObject(
+        name: string,
+        value: number): MetricTelemetry;
 }

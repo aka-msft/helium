@@ -1,4 +1,5 @@
 import * as ApplicationInsights from "applicationinsights";
+import { MetricTelemetry } from "applicationinsights/out/Declarations/Contracts";
 import { DependencyTelemetry } from "applicationinsights/out/Declarations/Contracts/TelemetryTypes/DependencyTelemetry";
 import { inject, injectable, named } from "inversify";
 
@@ -50,6 +51,12 @@ export class AppInsightsProvider {
         this.telemClient.trackDependency(dependency);
     }
 
+    public trackMetric(metric: MetricTelemetry) {
+
+        this.telemClient.trackMetric(metric);
+
+    }
+
     public getDependencyTrackingObject(
         dtn: string,
         n: string,
@@ -70,5 +77,18 @@ export class AppInsightsProvider {
 
         // Return the DependencyTelemetry object
         return dependencyTelem;
+    }
+
+    public getMetricTelemetryObject(
+        metricname: string,
+        metricvalue: number): MetricTelemetry {
+
+        // Declare and initialize a MetricTelemetry object for sending metrics to AppInsights
+        const metricTelem: MetricTelemetry = {
+            name: metricname,
+            value: metricvalue,
+        };
+        // Return the MetricTelemetry object
+        return metricTelem;
     }
 }
