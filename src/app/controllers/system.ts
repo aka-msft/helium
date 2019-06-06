@@ -51,6 +51,11 @@ export class SystemController implements interfaces.Controller {
     public async healthcheck(req, res) {
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Healthcheck";
+
+        let resCode = httpStatus.OK;
+        let resMessage = "Successfully reached healthcheck endpoint";
+
+        this.logger.Trace("API server: Endpoint called: " + apiName, req.getId());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         const querySpec: DocumentQuery = {
@@ -61,7 +66,8 @@ export class SystemController implements interfaces.Controller {
         try {
             const results = await this.cosmosDb.queryCollections(database, querySpec);
         } catch (e) {
-            return res.send(httpStatus.InternalServerError, { message: "Application failed to reach database: " + e });
+            resCode = httpStatus.InternalServerError;
+            resMessage = "Application failed to reach database: " + e;
         }
         const apiEndTime = DateUtilities.getTimestamp();
         const apiDuration = apiEndTime - apiStartTime;
@@ -70,7 +76,8 @@ export class SystemController implements interfaces.Controller {
         const apiDurationMetricName = "API server: " + apiName + " duration";
         const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
         this.telem.trackMetric(apiMetric);
+        this.logger.Trace("API server: " + apiName + "  Result: " + resCode, req.getId());
 
-        return res.send(httpStatus.OK, { message: "Successfully reached healthcheck endpoint" });
+        return res.send(resCode, { message: resMessage });
     }
 }

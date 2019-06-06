@@ -1,9 +1,13 @@
 import * as bunyan from "bunyan";
 import { inject, injectable, named } from "inversify";
+import { v4 } from "uuid";
+import { ILoggingProvider } from "./iLoggingProvider";
 
 @injectable()
-export class BunyanLogger {
+export class BunyanLogger implements ILoggingProvider {
   private Logger: bunyan;
+  private uniqueServerId: string;
+  private customId: string;
 
   /**
    * Creates a new instance of the Bunyan Logger.
@@ -44,13 +48,23 @@ export class BunyanLogger {
         },
       ],
     });
+    this.uniqueServerId = v4();
   }
 
-  public Trace(object: any, message: string) {
-    this.Logger.trace(object, message);
+  public Trace(message: string, id?: string) {
+    if (id == null) {
+      if (this.customId == null) {
+        this.Logger.trace({corr_id: this.uniqueServerId}, message);
+      } else {
+        this.Logger.trace({corr_id: this.uniqueServerId, custom_id: this.customId}, message);
+      }
+    } else {
+      this.customId = id;
+      this.Logger.trace({corr_id: this.uniqueServerId, custom_id: this.customId}, message);
+    }
   }
 
   public Error(error: Error, errormessage: string) {
-    this.Logger.error(error, errormessage);
+    this.Logger.error({err: error, corr_id: this.uniqueServerId, custom_id: this.customId}, errormessage);
   }
 }

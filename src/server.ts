@@ -20,7 +20,10 @@ import { DateUtilities } from "./utilities/dateUtilities";
 (async () => {
     const iocContainer = new Container();
 
-    const config = await getConfigValues();
+    iocContainer.bind<ILoggingProvider>("ILoggingProvider").to(BunyanLogger).inSingletonScope();
+    const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
+
+    const config = await getConfigValues(log);
 
     iocContainer.bind<interfaces.Controller>(TYPE.Controller).to(ActorController).whenTargetNamed("ActorController");
     iocContainer.bind<interfaces.Controller>(TYPE.Controller).to(GenreController).whenTargetNamed("GenreController");
@@ -31,44 +34,53 @@ import { DateUtilities } from "./utilities/dateUtilities";
     iocContainer.bind<string>("string").toConstantValue(config.cosmosDbKey).whenTargetNamed("cosmosDbKey");
     iocContainer.bind<string>("string").toConstantValue(config.insightsKey).whenTargetNamed("instrumentationKey");
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
-    iocContainer.bind<ILoggingProvider>("ILoggingProvider").to(BunyanLogger).inSingletonScope();
 
     const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
-    const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
 
     const port = process.env.PORT || 3000;
 
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
 
+    log.Trace("Created the Restify server");
+
+    try {
     // listen for requests
     server.setConfig((app) => {
         // parse requests of content-type - application/x-www-form-urlencoded
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(restify.plugins.queryParser({ mapParams: false }));
         app.use(bodyParser.json());
+        app.use(restify.plugins.requestLogger());
 
+        log.Trace("Setting up index.html to serve static");
         app.get("/", restify.plugins.serveStatic({
             default: "index.html",
             directory: __dirname + "/static",
         }));
 
+        log.Trace("Setting up swagger.json to serve static");
         app.get("/swagger.json", restify.plugins.serveStatic({
             directory: __dirname,
             file: "swagger.json",
         }));
 
+        log.Trace("Setting up node modules to serve static");
         app.get("/node_modules/*", restify.plugins.serveStatic({
             directory: __dirname + "/..",
         }));
-
     }).build().listen(port, () => {
-        console.log("Server is listening on port " + port);
+        log.Trace("Server is listening on port " + port);
         telem.trackEvent("API Server: Server started on port " + port);
     });
+
+    } catch (err) {
+        log.Error(Error(err), "Error in setting up the server!");
+    }
 })();
 
-export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string }> {
+export async function getConfigValues(
+    log: ILoggingProvider): Promise<{ cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string }> {
     // cosmosDbKey comes from KeyVault or env var
     let cosmosDbKey: string;
     // insightsKey comes from KeyVault or env var
@@ -76,25 +88,27 @@ export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDb
 
     let configFallback: boolean;
 
+    log.Trace("Getting configuration values");
+
     // try to get KeyVault connection details from env
     // Whether or not we have clientId and clientSecret, we want to use KeyVault
     const clientId = process.env.CLIENT_ID;
     const clientSecret = process.env.CLIENT_SECRET;
 
     if (clientId && !clientSecret) {
-        console.log("CLIENT_ID env var set, but not CLIENT_SECRET");
+        log.Trace("CLIENT_ID env var set, but not CLIENT_SECRET");
         process.exit(1);
     }
 
     const tenantId = process.env.TENANT_ID;
     if (!tenantId) {
-        console.log("No TENANT_ID env var set");
+        log.Trace("No TENANT_ID env var set");
         configFallback = true;
     }
 
     const cosmosDbUrl = process.env.COSMOSDB_URL;
     if (!cosmosDbUrl) {
-        console.log("No COSMOSDB_URL env var set");
+        log.Trace("No COSMOSDB_URL env var set");
         process.exit(1);
     }
 
@@ -102,13 +116,17 @@ export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDb
     if (!configFallback) {
         const keyVaultUrl = process.env.KEY_VAULT_URL;
 
-        const keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId);
+        log.Trace("Trying to read from keyvault " + keyVaultUrl);
+        const keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId, log);
         try {
             cosmosDbKey = await keyvault.getSecret("cosmosDBkey");
+            log.Trace("Got cosmosDBKey from keyvault");
+
             insightsKey = await keyvault.getSecret("AppInsightsInstrumentationKey");
+            log.Trace("Got AppInsightsInstrumentationKey from keyvault");
 
         } catch {
-            console.log("Failed to get secrets from KeyVault. Falling back to env vars for secrets");
+            log.Error(Error(), "Failed to get secrets from KeyVault. Falling back to env vars for secrets");
         }
 
     } else {
@@ -117,22 +135,24 @@ export async function getConfigValues(): Promise<{ cosmosDbKey: string, cosmosDb
 
     // if some secrets still don't exist, check env
     if (!cosmosDbKey) {
+        log.Trace("Setting cosmodDbKey from environment variable");
         cosmosDbKey = process.env.COSMOSDB_KEY;
     }
     if (!insightsKey) {
+        log.Trace("Setting AppInsightsInstrumentationKey from environment variable");
         insightsKey = process.env.APPINSIGHTS_INSTRUMENTATIONKEY;
     }
 
     // exit with failing code if still no secrets
     if (!cosmosDbKey) {
-        console.log("Failed to get COSMOSDB_KEY");
+        log.Trace("Failed to get COSMOSDB_KEY");
         process.exit(1);
     }
     if (!insightsKey) {
-        console.log("Failed to get APPINSIGHTS_INSTRUMENTATIONKEY");
+        log.Trace("Failed to get APPINSIGHTS_INSTRUMENTATIONKEY");
         process.exit(1);
     }
-
+    log.Trace("Returning config values");
     return {
         cosmosDbKey,
         cosmosDbUrl,

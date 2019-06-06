@@ -41,6 +41,8 @@ export class MovieController implements interfaces.Controller {
 
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Get all Movies";
+
+        this.logger.Trace("API server: Endpoint called: " + apiName, req.getId());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         let querySpec: DocumentQuery;
@@ -91,6 +93,7 @@ export class MovieController implements interfaces.Controller {
         const apiDurationMetricName = "API server: " + apiName + " duration";
         const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
         this.telem.trackMetric(apiMetric);
+        this.logger.Trace("API server: " + apiName + "  Result: " + resCode, req.getId());
 
         return res.send(resCode, results);
     }
@@ -112,6 +115,8 @@ export class MovieController implements interfaces.Controller {
 
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Get Movie by Id";
+
+        this.logger.Trace("API server: Endpoint called: " + apiName, req.getId());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         const querySpec: DocumentQuery = {
@@ -150,6 +155,7 @@ export class MovieController implements interfaces.Controller {
         const apiDurationMetricName = "API server: " + apiName + " duration";
         const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
         this.telem.trackMetric(apiMetric);
+        this.logger.Trace("API server: " + apiName + "  Result: " + resCode, req.getId());
 
         return res.send(resCode, results);
     }
@@ -179,6 +185,8 @@ export class MovieController implements interfaces.Controller {
 
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Post Movie";
+
+        this.logger.Trace("API server: Endpoint called: " + apiName, req.getId());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         const movie: Movie = Object.assign(Object.create(Movie.prototype),
@@ -214,6 +222,7 @@ export class MovieController implements interfaces.Controller {
         const apiDurationMetricName = "API server: " + apiName + " duration";
         const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
         this.telem.trackMetric(apiMetric);
+        this.logger.Trace("API server: " + apiName + "  Result: " + resCode, req.getId());
 
         return res.send(resCode, result);
     }
@@ -295,6 +304,8 @@ export class MovieController implements interfaces.Controller {
 
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Delete Movie by Id";
+
+        this.logger.Trace("API server: Endpoint called: " + apiName, req.getId());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
 
         // movieId isn't the partition key, so any search on it will require a cross-partition query.
@@ -323,6 +334,7 @@ export class MovieController implements interfaces.Controller {
         const apiMetric = this.telem.getMetricTelemetryObject(apiDurationMetricName, apiDuration);
         this.telem.trackMetric(apiMetric);
 
+        this.logger.Trace("API server: " + apiName + "  Result: " + resCode, req.getId());
         return res.send(resCode, result);
     }
 }

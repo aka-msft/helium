@@ -4,13 +4,12 @@
  */
 
 export interface ILoggingProvider {
-
     /**
      * Logs tracing information
-     * @param object object whose fields you want to add to logs
-     * @param message Message to log
+     * @param message message to trace
+     * @param id custom id to correlate traces
      */
-    Trace(object: any, message: string): void;
+    Trace(message: string, id?: string): void;
     /**
      * Logs an error with the error code and the error message string specified
      * @param error error to log
