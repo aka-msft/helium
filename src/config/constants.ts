@@ -4,6 +4,7 @@ export const integrationServer =  process.env.integration_server_url;
 export enum httpStatus {
     OK = 200,
     Created = 201,
+    NoContent = 204,
     BadRequest = 400,
     NotFound = 404,
     InternalServerError = 500,

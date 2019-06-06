@@ -26,12 +26,24 @@ export class ActorController implements interfaces.Controller {
     }
 
     /**
-     * @api {get} /api/actors Request All Actors
-     * @apiName GetAll
-     * @apiGroup Actors
+     * @swagger
      *
-     * @apiDescription
-     * Retrieve and return all actors.
+     * /api/actors:
+     *   get:
+     *     description: Retrieve and return all actors.
+     *     tags:
+     *       - Actors
+     *     responses:
+     *       '200':
+     *         description: List of actor objects
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Actor'
+     *       default:
+     *         description: Unexpected error
      */
     @Get("/")
     public async getAll(req: Request, res) {
@@ -74,14 +86,31 @@ export class ActorController implements interfaces.Controller {
     }
 
     /**
-     * @api {get} /api/actors/ Request Actor information
-     * @apiName GetActor
-     * @apiGroup Actors
+     * @swagger
      *
-     * @apiDescription
-     * Retrieve and return a single actor by actor ID.
-     *
-     * @apiParam (query) {String} id Actor's unique ID.
+     * /api/actors/{id}:
+     *   get:
+     *     description: Retrieve and return a single actor by actor ID.
+     *     tags:
+     *       - Actors
+     *     parameters:
+     *       - name: id
+     *         description: The ID of the actor to look for.
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *     responses:
+     *       '200':
+     *         description: The actor object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Actor'
+     *       '404':
+     *         description: An actor with the specified ID was not found.
+     *       default:
+     *         description: Unexpected error
      */
     @Get("/:id")
     public async getActorById(req, res) {
@@ -135,22 +164,37 @@ export class ActorController implements interfaces.Controller {
     }
 
     /**
-     * @api {post} /api/actors Create Actor
-     * @apiName PostActor
-     * @apiGroup Actors
+     * @swagger
      *
-     * @apiDescription
-     * Create an actor.
-     *
-     * @apiParam (body) {String} id
-     * @apiParam (body) {String} actorId
-     * @apiParam (body) {String} textSearch
-     * @apiParam (body) {String} name
-     * @apiParam (body) {String="Actor"} type
-     * @apiParam (body) {String} [key]
-     * @apiParam (body) {Number} [birthYear] Year they were born
-     * @apiParam (body) {String[]} [profession]
-     * @apiParam (body) {Movie[]} [movies]
+     * /api/actors:
+     *   post:
+     *     tags:
+     *       - Actors
+     *     requestBody:
+     *       description: Creates an actor.
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/Actor'
+     *         application/xml:
+     *           schema:
+     *             $ref: '#/components/schemas/Actor'
+     *         application/x-www-form-urlencoded:
+     *           schema:
+     *             $ref: '#/components/schemas/Actor'
+     *         text/plain:
+     *           schema:
+     *             type: string
+     *     responses:
+     *       '201':
+     *         description: The created actor
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Actor'
+     *       default:
+     *         description: Unexpected error
      */
     @Post("/")
     public async createActor(req, res) {

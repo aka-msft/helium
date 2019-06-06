@@ -4,6 +4,7 @@ import { Container } from "inversify";
 import { interfaces, InversifyRestifyServer, TYPE } from "inversify-restify-utils";
 import "reflect-metadata";
 import * as restify from "restify";
+import * as swaggerJSDoc from "swagger-jsdoc";
 import { ActorController } from "./app/controllers/actor";
 import { GenreController } from "./app/controllers/genre";
 import { MovieController } from "./app/controllers/movie";
@@ -53,17 +54,34 @@ import { DateUtilities } from "./utilities/dateUtilities";
         app.use(bodyParser.json());
         app.use(restify.plugins.requestLogger());
 
-        log.Trace("Setting up index.html to serve static");
-        app.get("/", restify.plugins.serveStatic({
-            default: "index.html",
-            directory: __dirname + "/static",
-        }));
+        const options = {
+            // Path to the API docs
+            apis: [`${__dirname}/app/models/*.js`, `${__dirname}/app/controllers/*.js`],
+            definition: {
+                info: {
+                    title: "Helium", // Title (required)
+                    version: "1.0.0", // Version (required)
+                },
+                openapi: "3.0.2", // Specification (optional, defaults to swagger: '2.0')
+            },
+        };
 
-        log.Trace("Setting up swagger.json to serve static");
-        app.get("/swagger.json", restify.plugins.serveStatic({
-            directory: __dirname,
-            file: "swagger.json",
-        }));
+        // Initialize swagger-jsdoc -> returns validated swagger spec in json format
+        const swaggerSpec = swaggerJSDoc(options);
+
+        app.get("/swagger.json", (req, res) => {
+            res.setHeader("Content-Type", "application/json");
+            res.send(swaggerSpec);
+        });
+
+        app.get("/", (req, res) => {
+            res.writeHead(200, {
+                "Content-Length": Buffer.byteLength(html),
+                "Content-Type": "text/html",
+            });
+            res.write(html);
+            res.end();
+        });
 
         log.Trace("Setting up node modules to serve static");
         app.get("/node_modules/*", restify.plugins.serveStatic({
@@ -159,3 +177,65 @@ export async function getConfigValues(
         insightsKey,
     };
 }
+
+const html = `<!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Swagger UI</title>
+                    <link rel="stylesheet" type="text/css" href="/node_modules/swagger-ui-dist/swagger-ui.css" >
+                    <link rel="icon" type="image/png"
+                    href="/node_modules/swagger-ui-dist/favicon-32x32.png" sizes="32x32" />
+                    <link rel="icon" type="image/png"
+                    href="/node_modules/swagger-ui-dist/favicon-16x16.png" sizes="16x16" />
+                    <style>
+                    html
+                    {
+                        box-sizing: border-box;
+                        overflow: -moz-scrollbars-vertical;
+                        overflow-y: scroll;
+                    }
+
+                    *,
+                    *:before,
+                    *:after
+                    {
+                        box-sizing: inherit;
+                    }
+
+                    body
+                    {
+                        margin:0;
+                        background: #fafafa;
+                    }
+                    </style>
+                </head>
+
+                <body>
+                    <div id="swagger-ui"></div>
+
+                    <script src="/node_modules/swagger-ui-dist/swagger-ui-bundle.js"> </script>
+                    <script src="/node_modules/swagger-ui-dist/swagger-ui-standalone-preset.js"> </script>
+                    <script>
+                    window.onload = function() {
+                        // Begin Swagger UI call region
+                        const ui = SwaggerUIBundle({
+                            url: '/swagger.json',
+                            dom_id: '#swagger-ui',
+                            deepLinking: true,
+                            presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset
+                            ],
+                            plugins: [
+                            SwaggerUIBundle.plugins.DownloadUrl
+                            ],
+                            layout: "StandaloneLayout"
+                        })
+                        // End Swagger UI call region
+
+                        window.ui = ui
+                    }
+                </script>
+                </body>
+                </html>`;

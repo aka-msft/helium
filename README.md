@@ -148,4 +148,4 @@ docker-compose up --abort-on-container-exit # Stops all containers if one contai
 
 ### REST Endpoints
 
-The REST endpoints are documented using the apiDoc standard (http://apidocjs.com/#params), which allows for swagger.json documentation generation.
+The REST endpoints are documented using the OpenAPI 3.0 standard (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md) and uses swagger-jsdoc (https://github.com/Surnet/swagger-jsdoc) to generate the swagger spec.

@@ -13,6 +13,44 @@ import { IsEqualToProperty } from "../../utilities/validationUtilities";
 import { IValidatable } from "./ivalidatable";
 import { Movie } from "./movie";
 
+/**
+ * @swagger
+ *
+ * components:
+ *   schemas:
+ *     Actor:
+ *       type: object
+ *       required:
+ *         - id
+ *         - actorId
+ *         - textSearch
+ *         - name
+ *         - type
+ *         - key
+ *       properties:
+ *         id:
+ *           type: string
+ *         actorId:
+ *           type: string
+ *         textSearch:
+ *           type: string
+ *         name:
+ *           type: string
+ *         type:
+ *           type: string
+ *         key:
+ *           type: string
+ *         birthYear:
+ *           type: number
+ *         profession:
+ *           type: array
+ *           items:
+ *             type: string
+ *         movies:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Movie'
+ */
 export class Actor implements IValidatable {
 
     @IsNotEmpty()
@@ -44,12 +82,16 @@ export class Actor implements IValidatable {
     @Equals("Actor")
     public type: string;
 
+    @IsNotEmpty()
+    @NotEquals((x) => x.trim.length() > 0)
+    public key: string;
+
     constructor(
         id: string,
         actorId: string,
         name: string,
         textSearch: string,
-        public key?: string,
+        key: string,
         public birthYear?: number,
         public profession?: string[],
         public movies?: Movie[]) {

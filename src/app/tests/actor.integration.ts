@@ -24,6 +24,7 @@ describe("Testing Actor Controller Methods", () => {
       actorId: `${randomNumber}`,
       birthYear: 1997,
       id: `${randomNumber}`,
+      key: "0",
       movies: [],
       name: "someName",
       profession: ["actor"],
