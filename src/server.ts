@@ -69,11 +69,13 @@ import { DateUtilities } from "./utilities/dateUtilities";
         // Initialize swagger-jsdoc -> returns validated swagger spec in json format
         const swaggerSpec = swaggerJSDoc(options);
 
+        log.Trace("Setting up swagger.json to serve statically");
         app.get("/swagger.json", (req, res) => {
             res.setHeader("Content-Type", "application/json");
             res.send(swaggerSpec);
         });
 
+        log.Trace("Setting up index.html to serve static");
         app.get("/", (req, res) => {
             res.writeHead(200, {
                 "Content-Length": Buffer.byteLength(html),
@@ -83,7 +85,7 @@ import { DateUtilities } from "./utilities/dateUtilities";
             res.end();
         });
 
-        log.Trace("Setting up node modules to serve static");
+        log.Trace("Setting up node modules to serve statically");
         app.get("/node_modules/*", restify.plugins.serveStatic({
             directory: __dirname + "/..",
         }));

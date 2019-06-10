@@ -56,6 +56,7 @@ export class CosmosDBProvider {
         });
         this.url = url;
         this.telem = telem;
+        this.logger = logger;
     }
 
     /**
@@ -77,8 +78,8 @@ export class CosmosDBProvider {
             // Get the timestamp immediately before the call to queryDocuments
             const queryStartTimeMs = DateUtilities.getTimestamp();
 
-            this.logger.Trace("In CosmosDB queryDocuments");
-            this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results) => {
+            this.docDbClient.queryDocuments(collectionLink, query, options).toArray((err, results, headers) => {
+                this.logger.Trace("In CosmosDB queryDocuments");
 
                 // Get the timestamp for when the query completes
                 const queryEndTimeMs = DateUtilities.getTimestamp();
@@ -119,6 +120,10 @@ export class CosmosDBProvider {
                 // Track CosmosDB query time metric
                 this.telem.trackMetric(metricTelem);
 
+                // Check for and log the db op RU cost
+                if (headers["x-ms-request-charge"]) {
+                    this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                }
                 this.logger.Trace("Returning from query documents: Result: " + resultCode);
 
                 if (err == null) {
@@ -151,8 +156,12 @@ export class CosmosDBProvider {
             const deleteStartTimeMs = DateUtilities.getTimestamp();
             this.docDbClient.deleteDocument(
                 documentLink,
-                {partitionKey: "0"},
-                (err) => {
+                { partitionKey: "0" },
+                (err, resource, headers) => {
+                    // Check for and log the db op RU cost
+                    if (headers["x-ms-request-charge"]) {
+                        this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                    }
                     const deleteEndTimeMs = DateUtilities.getTimestamp();
                     const deleteDuration = deleteEndTimeMs - deleteStartTimeMs;
 
@@ -191,7 +200,11 @@ export class CosmosDBProvider {
 
             this.logger.Trace("In CosmosDB queryCollections");
             const queryCollectionsStartTime = DateUtilities.getTimestamp();
-            this.docDbClient.queryCollections(dbLink, query).toArray((err, results) => {
+            this.docDbClient.queryCollections(dbLink, query).toArray((err, results, headers) => {
+                // Check for and log the db op RU cost
+                if (headers["x-ms-request-charge"]) {
+                    this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                }
                 const queryCollectionsEndTime = DateUtilities.getTimestamp();
                 const queryCollectionsDuration = queryCollectionsEndTime - queryCollectionsStartTime;
 
@@ -229,7 +242,12 @@ export class CosmosDBProvider {
 
             const upsertDocumentStartTime = DateUtilities.getTimestamp();
             const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
-            this.docDbClient.upsertDocument(collectionLink, content, (err, result) => {
+            this.docDbClient.upsertDocument(collectionLink, content, (err, result, headers) => {
+                // Check for and log the db op RU cost
+                if (headers["x-ms-request-charge"]) {
+                    this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                }
+
                 const upsertDocumentEndTime = DateUtilities.getTimestamp();
                 const upsertDocumentDuration = upsertDocumentEndTime - upsertDocumentStartTime;
 

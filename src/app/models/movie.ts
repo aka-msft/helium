@@ -38,6 +38,8 @@ import { IValidatable } from "./ivalidatable";
  *           type: string
  *         type:
  *           type: string
+ *           enum:
+ *             - Movie
  *         key:
  *           type: string
  *         year:

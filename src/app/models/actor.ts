@@ -38,6 +38,8 @@ import { Movie } from "./movie";
  *           type: string
  *         type:
  *           type: string
+ *           enum:
+ *             - Actor
  *         key:
  *           type: string
  *         birthYear:
