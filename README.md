@@ -37,7 +37,7 @@ export APPINSIGHTS_INSTRUMENTATIONKEY="instrumentation_key"
 
 ### Build (Transpile to JS)
 
-1. `npm run build` will transpile source files from the `src/` directory into a destionation directory named `dist/`.  Console output should appear as follows:
+1. `npm run build` will transpile source files from the `src/` directory into a destination directory named `dist/`.  Console output should appear as follows:
 
 ```
 user@MININT-###### MINGW64 /c/users/<user>/repos/helium (<user>/<branch>)
