@@ -3,6 +3,7 @@ import chaiHttp = require("chai-http");
 import "mocha";
 import { integrationServer } from "../../config/constants";
 import { NumberUtilities } from "../../utilities/numberUtilities";
+import { StringUtilities } from "../../utilities/stringUtilities";
 
 chai.use(chaiHttp);
 
@@ -49,6 +50,43 @@ describe("Testing Actor Controller Methods", () => {
             chai.assert.equal(randomNumber, id);
           });
       });
+  });
+
+  it("Testing POST + GET /api/actors?q=<name>", async () => {
+    const randomStringId = StringUtilities.getRandomString();
+    const randomStringName = StringUtilities.getRandomString();
+
+    const testActor = {
+      actorId: randomStringId,
+      birthYear: 1980,
+      id: randomStringId,
+      key: "0",
+      movies: [],
+      name: randomStringName,
+      profession: [],
+      textSearch: randomStringName.toLowerCase(),
+      type: "Actor",
+    };
+
+    return chai.request(integrationServer)
+    .post("/api/actors")
+    .set("content-type", "application/json")
+    .send(testActor)
+    .then((res) => {
+
+      chai.expect(res).to.have.status(201);
+      chai.request(integrationServer)
+      .get(`/api/actors`)
+      .query({q: randomStringName})
+        .then((getResponse) => {
+          chai.expect(getResponse).to.have.status(200);
+          const getRespBody = getResponse.body;
+          chai.assert.isArray(getRespBody);
+          console.log(`${integrationServer}/api/actors?q=${randomStringName}`);
+          chai.assert.isAtLeast(getRespBody.length, 1);
+          chai.assert.equal(randomStringName, getRespBody[0].name);
+        });
+    });
   });
 
 });

@@ -33,6 +33,12 @@ export class ActorController implements interfaces.Controller {
      *     description: Retrieve and return all actors.
      *     tags:
      *       - Actors
+     *     parameters:
+     *       - name: q
+     *         description: The actor name to filter by.
+     *         in: query
+     *         schema:
+     *           type: string
      *     responses:
      *       '200':
      *         description: List of actor objects
@@ -52,13 +58,34 @@ export class ActorController implements interfaces.Controller {
 
         this.logger.Trace("API server: Endpoint called: " + apiName, req.id());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
-        const querySpec = {
-            parameters: [],
-            query: `SELECT root.actorId,
-                      root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
-              FROM root
-              WHERE root.type = 'Actor'`,
-        };
+
+        let querySpec: DocumentQuery;
+
+        // Actor name is an optional query param.
+        // If not specified, we should query for all actors.
+        const actorName: string = req.query.q;
+        if (actorName === undefined) {
+            querySpec = {
+                parameters: [],
+                query: `SELECT root.actorId, root.type, root.name,
+                root.birthYear, root.deathYear, root.profession, root.movies
+                FROM root
+                WHERE root.type = 'Actor'`,
+            };
+        } else {
+            querySpec = {
+                parameters: [
+                    {
+                        name: "@actorname",
+                        value: actorName.toLowerCase(),
+                    },
+                ],
+                query: `SELECT root.actorId, root.type, root.name,
+                root.birthYear, root.deathYear, root.profession, root.movies
+                FROM root
+                WHERE CONTAINS(root.textSearch, @actorname) AND root.type = 'Actor'`,
+            };
+        }
 
         // make query, catch errors
         let resCode = httpStatus.OK;
