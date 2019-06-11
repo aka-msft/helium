@@ -1,0 +1,32 @@
+# This pipeline runs unit and integration tests for helium
+#   and then deploys the code to heliumintacr.azurecr.io
+
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+variables:
+- group: HeliumKV
+
+steps:
+- task: DockerInstaller@0
+  inputs:
+    dockerVersion: '17.09.0-ce'
+- script: |
+    cd docker
+    sed s/@@1@@/$(intClientID)/ helium-release.env.template > helium-release.env.2
+    sed s/@@2@@/$(intPassword)/ helium-release.env.2 > helium-release.env.3
+    sed s/@@3@@/$(intTenantID)/ helium-release.env.3 > helium-release.env
+    rm helium-release.env.2
+    rm helium-release.env.3
+    cd ..
+    docker-compose build
+    docker-compose up --abort-on-container-exit
+  displayName: 'docker compose integration tests'
+- script: |
+    docker login heliumintacr.azurecr.io -u $(intClientID) -p $(intPassword)
+    docker build --target=release -t heliumintacr.azurecr.io/helium:canary .
+    docker push heliumintacr.azurecr.io/helium:canary
+  displayName: 'dockerize and push to helium int environment ACR'
