@@ -35,10 +35,11 @@ ENTRYPOINT [ "sh", "./scripts/start-service.sh" ]
 # ---- Integration Test ----
 # run integration tests
 FROM dependencies AS integration
-# Tell docker that all commands in this step should run as the appuser user
-USER appuser
 ARG integration_server_url=localhost:3000
 ENV integration_server_url=${integration_server_url}
 COPY . .
 COPY --from=dependencies /app/prod_node_modules ./node_modules
+RUN chown -R appuser /app
+# Tell docker that all commands in this step should run as the appuser user
+USER appuser
 ENTRYPOINT [ "sh", "./scripts/run-integration.sh" ]

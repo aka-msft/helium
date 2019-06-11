@@ -84,7 +84,6 @@ describe("Testing Movie Controller Methods", () => {
           chai.expect(getResponse).to.have.status(200);
           const getRespBody = getResponse.body;
           chai.assert.isArray(getRespBody);
-          console.log(`${integrationServer}/api/movies?q=${randomString}`);
           chai.assert.isAtLeast(getRespBody.length, 1);
           chai.assert.equal(randomString, getRespBody[0].movieId);
           chai.assert.equal(randomString, getRespBody[0].title);

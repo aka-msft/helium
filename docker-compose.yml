@@ -16,6 +16,6 @@ services:
     image: helium:integration
     environment:
       integration_server_url: helium-release:3000
-    links:
+    depends_on:
       - helium-release
     
