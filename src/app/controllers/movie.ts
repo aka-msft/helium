@@ -7,7 +7,7 @@ import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { DateUtilities } from "../../utilities/dateUtilities";
-import { Log } from "../../utilities/loggingUtilities";
+import { Log } from "../../utilities/decorators";
 import { Movie } from "../models/movie";
 
 /**
@@ -56,11 +56,13 @@ export class MovieController implements interfaces.Controller {
     @Log
     public async getAll(req, res) {
 
+        // Move to decorator function
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Get all Movies";
 
         this.logger.Trace("API server: Endpoint called: " + apiName, req.getId());
         this.telem.trackEvent("API server: Endpoint called: " + apiName);
+        // Move to decorator function
 
         let querySpec: DocumentQuery;
 
