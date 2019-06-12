@@ -7,7 +7,30 @@ import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { DateUtilities } from "../../utilities/dateUtilities";
+// import { LoggingUtilities } from "../../utilities/loggingUtilities";
 import { Movie } from "../models/movie";
+
+// TODO: Figure out how to extract this function into utils and import into controllers
+function log(target, name, descriptor) {
+    const original = descriptor.value;
+    if (typeof original === 'function') {
+      descriptor.value = function(...args) {
+        console.log('Decorator start');
+        console.log(`Arguments: ${args}`);
+        try {
+          const result = original.apply(this, args);
+          console.log(`Result: ${result}`);
+          console.log('Decorator finish');
+          return result;
+        } catch (e) {
+          console.log(`Error: ${e}`);
+          console.log('Decorator error');
+          throw e;
+        }
+      }
+    }
+    return descriptor;
+  }
 
 /**
  * controller implementation for our movies endpoint
@@ -52,6 +75,7 @@ export class MovieController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Get("/")
+    @log
     public async getAll(req, res) {
 
         const apiStartTime = DateUtilities.getTimestamp();
@@ -141,6 +165,7 @@ export class MovieController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Get("/:id")
+    @log
     public async getMovieById(req, res) {
 
         const movieId = req.params.id;
@@ -226,6 +251,7 @@ export class MovieController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Post("/")
+    @log
     public async createMovie(req, res) {
 
         const apiStartTime = DateUtilities.getTimestamp();
@@ -313,6 +339,7 @@ export class MovieController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Put("/:id")
+    @log
     public async updateMovie(req, res) {
 
         this.telem.trackEvent("create movie");
@@ -375,6 +402,7 @@ export class MovieController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Delete("/:id")
+    @log
     public async deleteMovieById(req, res) {
 
         const movieId = req.params.id;
