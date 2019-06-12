@@ -11,17 +11,24 @@ export function Log(target, name, descriptor) {
       descriptor.value = function(...args) {
         console.log("DEBUGGING - DELETE ME: Decorator start");
         console.log(`Arguments: ${args}`);
-        console.log(`Descriptor name: ${descriptor.name}`);
-        console.log(`Descriptor value: ${descriptor.value}`);
 
-        // const httpHeaderArgIndex = 0;
-        const httpHeaderArgString: string = String(args[0]);
-
-        if (httpHeaderArgString.indexOf("GET /api/movies HTTP") !== -1) {
-          console.log("Switch statement: /api/movies endpoint called");
-        }
+        const httpHeaderIndex = 0;
+        const httpHeaderString: string = String(args[httpHeaderIndex]);
+        console.log(`HTTP Header: ${httpHeaderString}`);
 
         // Insert initial logging and timestamp here
+        // TODO: Timestamp and duration calculations - DateUtilities
+        // TODO: Consider using regex pattern matching for HTTP headers
+        // TODO: Also investigate if there are any other ways to tell which endpoint was called
+        //       aside from searching within the HTTP header
+        // TODO: Extract logging (ILoggingProvider) and telemetry (ITelemProvider)
+        //       from controller files and insert here.
+        // TODO: Make sure we don't lose any important request information in this refactor,
+        //       such as correlation id, request id, etc.
+        if (httpHeaderString.indexOf("GET /api/movies HTTP") !== -1) {
+          console.log("Switch statement: /api/movies endpoint called");
+        }
+        // ...etc for all endpoints
 
         try {
           const result = original.apply(this, args);

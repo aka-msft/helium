@@ -7,6 +7,7 @@ import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
+import { Log } from "../../utilities/decorators";
 import { DateUtilities } from "../../utilities/dateUtilities";
 
 /**
@@ -46,6 +47,7 @@ export class GenreController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Get("/")
+    @Log
     public async getAll(req: Request, res) {
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Get all Genres";

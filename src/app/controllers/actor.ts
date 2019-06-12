@@ -7,6 +7,7 @@ import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
+import { Log } from "../../utilities/decorators";
 import { DateUtilities } from "../../utilities/dateUtilities";
 import { Actor } from "../models/actor";
 
@@ -52,6 +53,7 @@ export class ActorController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Get("/")
+    @Log
     public async getAll(req: Request, res) {
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Get all actors";
@@ -140,6 +142,7 @@ export class ActorController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Get("/:id")
+    @Log
     public async getActorById(req, res) {
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Get actor by Id";
@@ -224,6 +227,7 @@ export class ActorController implements interfaces.Controller {
      *         description: Unexpected error
      */
     @Post("/")
+    @Log
     public async createActor(req, res) {
         const apiStartTime = DateUtilities.getTimestamp();
         const apiName = "Post actor";
