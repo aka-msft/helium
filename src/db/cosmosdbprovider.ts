@@ -122,7 +122,12 @@ export class CosmosDBProvider {
 
                 // Check for and log the db op RU cost
                 if (headers["x-ms-request-charge"]) {
-                    this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                    this.logger.Trace(`queryDocument RU Cost: ${headers["x-ms-request-charge"]}`);
+                    const ruMetricTelem = this.telem.getMetricTelemetryObject(
+                        "CosmosDB: queryDocument RU Cost",
+                        headers["x-ms-request-charge"],
+                    );
+                    this.telem.trackMetric(ruMetricTelem);
                 }
                 this.logger.Trace("Returning from query documents: Result: " + resultCode);
 
@@ -160,7 +165,12 @@ export class CosmosDBProvider {
                 (err, resource, headers) => {
                     // Check for and log the db op RU cost
                     if (headers["x-ms-request-charge"]) {
-                        this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                        this.logger.Trace(`deleteDocument RU Cost: ${headers["x-ms-request-charge"]}`);
+                        const ruMetricTelem = this.telem.getMetricTelemetryObject(
+                            "CosmosDB: deleteDocument RU Cost",
+                            headers["x-ms-request-charge"],
+                        );
+                        this.telem.trackMetric(ruMetricTelem);
                     }
                     const deleteEndTimeMs = DateUtilities.getTimestamp();
                     const deleteDuration = deleteEndTimeMs - deleteStartTimeMs;
@@ -203,7 +213,12 @@ export class CosmosDBProvider {
             this.docDbClient.queryCollections(dbLink, query).toArray((err, results, headers) => {
                 // Check for and log the db op RU cost
                 if (headers["x-ms-request-charge"]) {
-                    this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                    this.logger.Trace(`queryCollections RU Cost: ${headers["x-ms-request-charge"]}`);
+                    const ruMetricTelem = this.telem.getMetricTelemetryObject(
+                        "CosmosDB: queryCollections RU Cost",
+                        headers["x-ms-request-charge"],
+                    );
+                    this.telem.trackMetric(ruMetricTelem);
                 }
                 const queryCollectionsEndTime = DateUtilities.getTimestamp();
                 const queryCollectionsDuration = queryCollectionsEndTime - queryCollectionsStartTime;
@@ -245,7 +260,12 @@ export class CosmosDBProvider {
             this.docDbClient.upsertDocument(collectionLink, content, (err, result, headers) => {
                 // Check for and log the db op RU cost
                 if (headers["x-ms-request-charge"]) {
-                    this.logger.Trace(`QueryDocument Resource Unit Cost: ${headers["x-ms-request-charge"]}`);
+                    this.logger.Trace(`upsertDocument RU Cost: ${headers["x-ms-request-charge"]}`);
+                    const ruMetricTelem = this.telem.getMetricTelemetryObject(
+                        "CosmosDB: upsertDocument RU Cost",
+                        headers["x-ms-request-charge"],
+                    );
+                    this.telem.trackMetric(ruMetricTelem);
                 }
 
                 const upsertDocumentEndTime = DateUtilities.getTimestamp();
