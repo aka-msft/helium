@@ -1,7 +1,7 @@
 # This pipeline runs unit tests for helium
 #   when a PR occurs on https://github.com/microsoft/helium
 
-trigger:
+pr:
 - master
 
 pool:
