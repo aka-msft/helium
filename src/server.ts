@@ -17,6 +17,7 @@ import { KeyVaultProvider } from "./secrets/keyvaultprovider";
 import { AppInsightsProvider } from "./telem/appinsightsprovider";
 import { ITelemProvider } from "./telem/itelemprovider";
 import { DateUtilities } from "./utilities/dateUtilities";
+import EndpointLogger from "./middleware/EndpointLogger";
 
 (async () => {
     const iocContainer = new Container();
@@ -53,6 +54,7 @@ import { DateUtilities } from "./utilities/dateUtilities";
         app.use(restify.plugins.queryParser({ mapParams: false }));
         app.use(bodyParser.json());
         app.use(restify.plugins.requestLogger());
+        app.use(EndpointLogger(iocContainer));
 
         const options = {
             // Path to the API docs
