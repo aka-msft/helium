@@ -40,7 +40,7 @@ describe("Testing Actor Controller Methods", () => {
       .then((res) => {
         chai.expect(res).to.have.status(201);
         return chai.request(integrationServer)
-        .get(`/api/actors/${randomNumber}`)
+          .get(`/api/actors/${randomNumber}`)
           .then((getResponse) => {
             chai.expect(getResponse).to.have.status(200);
             const body = getResponse.body;
@@ -69,24 +69,32 @@ describe("Testing Actor Controller Methods", () => {
     };
 
     return chai.request(integrationServer)
-    .post("/api/actors")
-    .set("content-type", "application/json")
-    .send(testActor)
-    .then((res) => {
+      .post("/api/actors")
+      .set("content-type", "application/json")
+      .send(testActor)
+      .then((res) => {
 
-      chai.expect(res).to.have.status(201);
-      chai.request(integrationServer)
-      .get(`/api/actors`)
-      .query({q: randomStringName})
-        .then((getResponse) => {
-          chai.expect(getResponse).to.have.status(200);
-          const getRespBody = getResponse.body;
-          chai.assert.isArray(getRespBody);
-          console.log(`${integrationServer}/api/actors?q=${randomStringName}`);
-          chai.assert.isAtLeast(getRespBody.length, 1);
-          chai.assert.equal(randomStringName, getRespBody[0].name);
-        });
-    });
+        chai.expect(res).to.have.status(201);
+        chai.request(integrationServer)
+          .get(`/api/actors`)
+          .query({ q: randomStringName })
+          .then((getResponse) => {
+            chai.expect(getResponse).to.have.status(200);
+            const getRespBody = getResponse.body;
+            chai.assert.isArray(getRespBody);
+            chai.assert.isAtLeast(getRespBody.length, 1);
+            chai.assert.equal(randomStringName, getRespBody[0].name);
+          });
+      });
   });
 
+  it("Testing POST Bad Request Response Code", async () => {
+    return chai.request(integrationServer)
+      .post("/api/actors")
+      .set("content-type", "application/json")
+      .send({})
+      .catch((err) => {
+        chai.expect(err.response).to.have.status(400);
+      });
+  });
 });
