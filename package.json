@@ -38,6 +38,7 @@
     "inversify": "^5.0.1",
     "inversify-restify-utils": "^3.4.0",
     "ms-rest-azure": "^2.6.0",
+    "passport-azure-ad": "^4.1.0",
     "reflect-metadata": "^0.1.13",
     "restify": "^8.3.0",
     "restify-errors": "^7.0.0",

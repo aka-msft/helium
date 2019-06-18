@@ -5,6 +5,9 @@ import { interfaces, InversifyRestifyServer, TYPE } from "inversify-restify-util
 import "reflect-metadata";
 import * as restify from "restify";
 import * as swaggerJSDoc from "swagger-jsdoc";
+import * as passport from "passport";
+import * as BearerStrategy from "passport-azure-ad";
+import * as authConfig from "../authConfig";
 import { ActorController } from "./app/controllers/actor";
 import { GenreController } from "./app/controllers/genre";
 import { MovieController } from "./app/controllers/movie";
@@ -19,7 +22,26 @@ import { ITelemProvider } from "./telem/itelemprovider";
 import { DateUtilities } from "./utilities/dateUtilities";
 import EndpointLogger from "./middleware/EndpointLogger";
 
+const authenticatedUserTokens = [];
+
+const authenticationStrategy = new BearerStrategy(authConfig.credentials, (token, done) => {
+    let currentUser = null;
+
+    let userToken = authenticatedUserTokens.find((user) => {
+        currentUser = user;
+        user.sub === token.sub;
+    });
+
+    if(!userToken) {
+        authenticatedUserTokens.push(token);
+    }
+
+    return done(null, currentUser, token);
+});
+
 (async () => {
+    passport.use(authenticationStrategy);
+
     const iocContainer = new Container();
 
     iocContainer.bind<ILoggingProvider>("ILoggingProvider").to(BunyanLogger).inSingletonScope();
@@ -39,7 +61,7 @@ import EndpointLogger from "./middleware/EndpointLogger";
 
     const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
 
-    const port = process.env.PORT || 3000;
+    const port = process.env.PORT || authConfig.serverPort;
 
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
