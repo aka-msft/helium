@@ -10,11 +10,19 @@ export function Log(target, name, descriptor) {
     if (typeof original === "function") {
       descriptor.value = function(...args) {
         console.log("DEBUGGING - DELETE ME: Decorator start");
-        console.log(`Arguments: ${args}`);
+        var i;
+        for(i = 0; i < args.length; i++) {
+          console.log(`Argument ${i}: ${args[i]}`);
+        }
+        // console.log(`Arguments: ${args}`);
+        console.log("Function parameters:")
+        console.log(`target: ${target.value}`);
+        console.log(`name: ${name}`);
+        console.log(`descriptor: " ${descriptor.value}`);
 
         const httpHeaderIndex = 0;
         const httpHeaderString: string = String(args[httpHeaderIndex]);
-        console.log(`HTTP Header: ${httpHeaderString}`);
+        // console.log(`HTTP Header: ${httpHeaderString}`);
 
         // Insert initial logging and timestamp here
         // TODO: Timestamp and duration calculations - DateUtilities
@@ -25,6 +33,7 @@ export function Log(target, name, descriptor) {
         //       from controller files and insert here.
         // TODO: Make sure we don't lose any important request information in this refactor,
         //       such as correlation id, request id, etc.
+        // TODO: Investigate switching up the order of decorators on methods to see what happens
         if (httpHeaderString.indexOf("GET /api/movies HTTP") !== -1) {
           console.log("Switch statement: /api/movies endpoint called");
         }
