@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
 import { Request } from "restify";
 import { httpStatus } from "../../config/constants";
-import { collection, database } from "../../db/dbconstants";
+import { collection, database, defaultPartitionKey} from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
@@ -14,6 +14,9 @@ import { Actor } from "../models/actor";
 @Controller("/api/actors")
 @injectable()
 export class ActorController implements interfaces.Controller {
+
+    // Must be type Any so we can return the string in GET API calls.
+    private static readonly actorDoesNotExistError: any = "An Actor with that ID does not exist";
 
     // Instantiate the actor controller
     constructor(
@@ -129,39 +132,25 @@ export class ActorController implements interfaces.Controller {
     public async getActorById(req, res) {
         const actorId = req.params.id;
 
-        const querySpec: DocumentQuery = {
-            parameters: [
-                {
-                    name: "@id",
-                    value: actorId,
-                },
-            ],
-            query: `SELECT root.actorId,
-                      root.type, root.name, root.birthYear, root.deathYear, root.profession, root.movies
-                      FROM root where root.actorId = @id`,
-        };
-
-        // actorID isn't the partition key, so any search on it will require a cross-partition query.
         // make query, catch errors
         let resCode = httpStatus.OK;
-        let results: RetrievedDocument[];
+        let result: RetrievedDocument;
         try {
-            results = await this.cosmosDb.queryDocuments(
-                database,
-                collection,
-                querySpec,
-                { enableCrossPartitionQuery: true },
-            );
+          result = await this.cosmosDb.getDocument(database,
+            collection,
+            defaultPartitionKey,
+            actorId);
         } catch (err) {
-            resCode = httpStatus.InternalServerError;
-        }
-
-        if (!results || !results.length) {
+          if (err.toString().includes("NotFound")) {
             resCode = httpStatus.NotFound;
+            result = ActorController.actorDoesNotExistError;
+          } else {
+            resCode = httpStatus.InternalServerError;
+            result = err.toString();
+          }
         }
 
-        return res.send(resCode, results);
-
+        return res.send(resCode, result);
     }
 
     /**

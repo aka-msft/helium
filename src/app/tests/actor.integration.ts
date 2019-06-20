@@ -44,9 +44,8 @@ describe("Testing Actor Controller Methods", () => {
           .then((getResponse) => {
             chai.expect(getResponse).to.have.status(200);
             const body = getResponse.body;
-            chai.assert.isArray(body);
-            chai.assert.isAtLeast(body.length, 1);
-            const id = body[0].actorId;
+            chai.assert.isNotArray(body);
+            const id = body.actorId;
             chai.assert.equal(randomNumber, id);
           });
       });

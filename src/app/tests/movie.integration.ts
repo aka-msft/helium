@@ -46,12 +46,12 @@ describe("Testing Movie Controller Methods", () => {
           .then((getResponse) => {
             chai.expect(getResponse).to.have.status(200);
             const getRespBody = getResponse.body;
-            chai.assert.isArray(getRespBody);
-            chai.assert.isAtLeast(getRespBody.length, 1);
-            chai.assert.equal(randomString, getRespBody[0].movieId);
-            chai.assert.equal(randomString, getRespBody[0].title);
+            chai.assert.isNotArray(getRespBody);
+            chai.assert.equal(randomString, getRespBody.movieId);
+            chai.assert.equal(randomString, getRespBody.title);
           });
       });
+
   });
 
   it("Testing POST + GET /api/movies?q=<name>", async () => {
@@ -75,7 +75,6 @@ describe("Testing Movie Controller Methods", () => {
       .set("content-type", "application/json")
       .send(testMovie)
       .then((res) => {
-
         chai.expect(res).to.have.status(201);
         chai.request(integrationServer)
           .get(`/api/movies`)

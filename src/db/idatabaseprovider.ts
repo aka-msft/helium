@@ -25,13 +25,15 @@ export interface IDatabaseProvider {
      * Runs the given query against CosmosDB.
      * @param database The database the document is in.
      * @param collection The collection the document is in.
-     * @param document The document to be deleted's id.
+     * @param partitionKey The partition key for the document.
+     * @param documentId The document to be deleted's id.
      * @param options Optional options object.
      */
     deleteDocument(
         database: string,
         collection: string,
-        document: string,
+        partitionKey: string,
+        documentId: string,
         options?: FeedOptions): Promise<string>;
 
     /**
@@ -41,5 +43,17 @@ export interface IDatabaseProvider {
      */
     queryCollections(database: string,
                      query: DocumentQuery): Promise<RetrievedDocument[]>;
+
+    /**
+     * Retrieves a specific document by Id.
+     * @param database The database the document is in.
+     * @param collection The collection the document is in.
+     * @param partitionKey The partition key for the document.
+     * @param documentId The id of the document to query.
+     */
+    getDocument(database: string,
+                collection: string,
+                partitionKey: string,
+                documentId: string): Promise<RetrievedDocument>;
 
 }

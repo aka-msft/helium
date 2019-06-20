@@ -2,7 +2,7 @@ import { DocumentQuery, RetrievedDocument } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Delete, Get, interfaces, Post, Put } from "inversify-restify-utils";
 import { httpStatus } from "../../config/constants";
-import { collection, database } from "../../db/dbconstants";
+import { collection, database, defaultPartitionKey } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
@@ -15,6 +15,9 @@ import { Movie } from "../models/movie";
 @Controller("/api/movies")
 @injectable()
 export class MovieController implements interfaces.Controller {
+
+    // Must be type Any so we can return the string in GET API calls.
+    private static readonly movieDoesNotExistError: any = "A Movie with that ID does not exist";
 
     constructor(
         @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
@@ -129,37 +132,24 @@ export class MovieController implements interfaces.Controller {
     public async getMovieById(req, res) {
         const movieId = req.params.id;
 
-        const querySpec: DocumentQuery = {
-            parameters: [
-                {
-                    name: "@id",
-                    value: movieId,
-                },
-            ],
-            query: `SELECT root.id, root.movieId, root.type, root.title, root.year,
-            root.runtime, root.genres, root.roles, root.key
-            FROM root where root.id = @id and root.type = 'Movie'`,
-        };
-
-        // movieId isn't the partition key, so any search on it will require a cross-partition query.
         let resCode = httpStatus.OK;
-        let results: RetrievedDocument[];
+        let result: RetrievedDocument;
         try {
-            results = await this.cosmosDb.queryDocuments(
-                database,
+            result = await this.cosmosDb.getDocument(database,
                 collection,
-                querySpec,
-                { enableCrossPartitionQuery: true },
-            );
+                defaultPartitionKey,
+                movieId);
         } catch (err) {
-            resCode = httpStatus.InternalServerError;
+            if (err.toString().includes("NotFound")) {
+                resCode = httpStatus.NotFound;
+                result = MovieController.movieDoesNotExistError;
+            } else {
+                resCode = httpStatus.InternalServerError;
+                result = err.toString();
+            }
         }
 
-        if (!results || !results.length) {
-            resCode = httpStatus.NotFound;
-        }
-
-        return res.send(resCode, results);
+        return res.send(resCode, result);
     }
 
     /**
@@ -338,6 +328,7 @@ export class MovieController implements interfaces.Controller {
             await this.cosmosDb.deleteDocument(
                 database,
                 collection,
+                defaultPartitionKey,
                 movieId,
             );
             return res.send(resCode);

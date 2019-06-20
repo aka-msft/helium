@@ -24,17 +24,19 @@ export class CosmosDBProvider {
      * @param collection The name of the collection.
      */
     private static _buildCollectionLink(database: string, collection: string): string {
-        return `/dbs/${database}/colls/${collection}`;
+        const dbLink = CosmosDBProvider._buildDBLink(database);
+        return `${dbLink}/colls/${collection}`;
     }
 
     /**
      * Builds a document link. Generates this over querying CosmosDB for performance reasons.
      * @param database The name of the database the collection is in.
      * @param collection The name of the collection.
-     * @param document The id of the document.
+     * @param documentId The id of the document to retrieve.
      */
-    private static _buildDocumentLink(database: string, collection: string, document: string): string {
-        return `/dbs/${database}/colls/${collection}/docs/${document}`;
+    private static _buildDocumentLink(database: string, collection: string, documentId: string): string {
+        const collectionLink = CosmosDBProvider._buildCollectionLink(database, collection);
+        return `${collectionLink}/docs/${documentId}/`;
     }
 
     private docDbClient: DocumentClient;
@@ -141,24 +143,26 @@ export class CosmosDBProvider {
      * Delete the given document.
      * @param database The database the document is in.
      * @param collection The collection the document is in.
-     * @param document ID of document to be deleted.
+     * @param partitionKey The partition key for the document.
+     * @param documentId ID of document to be deleted.
      * @param options Optional options, not currently implemented.
      */
     public async deleteDocument(
         database: string,
         collection: string,
-        document: string,
+        partitionKey: string,
+        documentId: string,
         options?: FeedOptions): Promise<string> {
 
         // Wrap all functionality in a promise to avoid forcing the caller to use callbacks
         return new Promise((resolve, reject) => {
-            const documentLink = CosmosDBProvider._buildDocumentLink(database, collection, document);
+            const documentLink = CosmosDBProvider._buildDocumentLink(database, collection, documentId);
 
             this.logger.Trace("In CosmosDB deleteDocument");
             const timer = DateUtilities.getTimer();
             this.docDbClient.deleteDocument(
                 documentLink,
-                { partitionKey: "0" },
+                { partitionKey },
                 (err, resource, headers) => {
                     // Check for and log the db op RU cost
                     if (headers["x-ms-request-charge"]) {
@@ -275,6 +279,57 @@ export class CosmosDBProvider {
                 } else {
                     this.logger.Error(Error(err.body), "upsertDocument returned error");
                     reject(err);
+                }
+            });
+        });
+    }
+
+    /**
+     * Retrieves a specific document by Id.
+     * @param database The database the document is in.
+     * @param collection The collection the document is in.
+     * @param partitionKey The partition key for the document.
+     * @param documentId The id of the document to query.
+     */
+    public async getDocument(database: string,
+                             collection: string,
+                             partitionKey: string,
+                             documentId: string): Promise<RetrievedDocument> {
+        return new Promise((resolve, reject) => {
+            this.logger.Trace("In CosmosDB getDocument");
+
+            const getDocumentStartTime = DateUtilities.getTimestamp();
+            const documentLink = CosmosDBProvider._buildDocumentLink(database, collection, documentId);
+
+            this.docDbClient.readDocument(documentLink, { partitionKey }, (err, result, headers) => {
+                // Check for and log the db op RU cost
+                if (headers["x-ms-request-charge"]) {
+                    this.logger.Trace(`getDocument RU Cost: ${headers["x-ms-request-charge"]}`);
+                    const ruMetricTelem = this.telem.getMetricTelemetryObject(
+                        "CosmosDB: getDocument RU Cost",
+                        headers["x-ms-request-charge"],
+                    );
+                    this.telem.trackMetric(ruMetricTelem);
+                }
+
+                const getDocumentEndTime = DateUtilities.getTimestamp();
+                const getDocumentDuration = getDocumentEndTime - getDocumentStartTime;
+
+                // Get an object to track upsertDocument time metric
+                const metricTelem = this.telem.getMetricTelemetryObject(
+                    "CosmosDB: getDocument Duration",
+                    getDocumentDuration,
+                );
+
+                // Track CosmosDB query time metric
+                this.telem.trackMetric(metricTelem);
+
+                if (err == null) {
+                    this.logger.Trace("Returning from get document successfully");
+                    resolve(result);
+                } else {
+                    this.logger.Error(Error(err.body), "getDocument returned error");
+                    reject(`${err.code} - ${err.body}`);
                 }
             });
         });
