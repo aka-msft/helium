@@ -269,6 +269,7 @@ export class MovieController implements interfaces.Controller {
             if (errors.length > 0) {
                 return res.send(httpStatus.BadRequest,
                     {
+                        // Unwrap all of the validation errors into an array
                         message: [].concat.apply([], errors.map((x) =>
                             Object.values(x.constraints))),
                         status: httpStatus.BadRequest,
