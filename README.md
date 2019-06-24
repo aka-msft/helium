@@ -108,11 +108,20 @@ docker build --target=test -t helium:canary . #dev
 
 #### With KeyVault
 
+##### Using Service Principal
 ```
 docker run -it -p 3000:3000 \
   -e CLIENT_ID='client_id' \
   -e CLIENT_SECRET='client_secret' \
   -e TENANT_ID='tenant_id' \
+  -e KEY_VAULT_URL='https://keyvaultname.vault.azure.net/' \
+  -e COSMOSDB_URL='https://cosmosname.documents.azure.com:443/' \
+  helium:canary
+```
+
+##### Using Managed Service Identities (Note: This will only work when run from an Azure service that supports MSI)
+```
+docker run -it -p 3000:3000 \
   -e KEY_VAULT_URL='https://keyvaultname.vault.azure.net/' \
   -e COSMOSDB_URL='https://cosmosname.documents.azure.com:443/' \
   helium:canary
