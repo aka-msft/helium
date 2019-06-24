@@ -88,7 +88,7 @@ import EndpointLogger from "./middleware/EndpointLogger";
         });
 
         log.Trace("Setting up node modules to serve statically");
-        app.get("/node_modules/*", restify.plugins.serveStatic({
+        app.get("/node_modules/swagger-ui-dist/*", restify.plugins.serveStatic({
             directory: __dirname + "/..",
         }));
     }).build().listen(port, () => {
