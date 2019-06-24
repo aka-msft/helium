@@ -342,7 +342,6 @@ export class MovieController implements interfaces.Controller {
                 result = err.toString();
             }
         }
-
         return res.send(resCode, result);
     }
 }
