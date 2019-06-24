@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "test-unit": "mocha --reporter spec --compilers ts:ts-node/register '**/*.unit.ts'",
+    "test-unit": "sh ./scripts/run-unit-tests.sh",
     "test-integration": "mocha --reporter spec --timeout 5000 --compilers ts:ts-node/register '**/*.integration.ts'",
     "build": "gulp scripts",
     "docker-build": "docker build -t helium:canary .",
