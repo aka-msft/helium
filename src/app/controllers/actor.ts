@@ -18,10 +18,9 @@ export class ActorController implements interfaces.Controller {
     private static readonly actorDoesNotExistError: any = "An Actor with that ID does not exist";
 
     // Instantiate the actor controller
-    constructor(
-        @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-        @inject("ITelemProvider") private telem: ITelemProvider,
-        @inject("ILoggingProvider") private logger: ILoggingProvider) {
+    constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
+                @inject("ITelemProvider") private telem: ITelemProvider,
+                @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
         this.logger = logger;

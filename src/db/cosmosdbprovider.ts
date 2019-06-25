@@ -48,11 +48,10 @@ export class CosmosDBProvider {
      * @param telem Telemetry provider used for metrics/events.
      * @param logger Logging provider user for tracing/logging.
      */
-    constructor(
-        @inject("string") @named("cosmosDbUrl") private url: string,
-        @inject("string") @named("cosmosDbKey") accessKey: string,
-        @inject("ITelemProvider") private telem: ITelemProvider,
-        @inject("ILoggingProvider") private logger: ILoggingProvider) {
+    constructor(@inject("string") @named("cosmosDbUrl") private url: string,
+                @inject("string") @named("cosmosDbKey") accessKey: string,
+                @inject("ITelemProvider") private telem: ITelemProvider,
+                @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.docDbClient = new DocumentClient(url, {
             masterKey: accessKey,
         });

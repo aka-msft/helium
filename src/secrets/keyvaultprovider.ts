@@ -17,12 +17,11 @@ export class KeyVaultProvider {
      * @param clientSecret The password for the provided service principal.
      * @param tenantId The id of the tenant that the service principal is a member of.
      */
-    constructor(
-        private url: string,
-        private clientId: string,
-        private clientSecret: string,
-        private tenantId: string,
-        @inject("ILoggingProvider") private logger: ILoggingProvider) {
+    constructor(private url: string,
+                private clientId: string,
+                private clientSecret: string,
+                private tenantId: string,
+                @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.url = url;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -57,7 +56,6 @@ export class KeyVaultProvider {
     private async _initialize() {
 
         this.logger.Trace("Initializing KeyVault");
-        // TODO (seusher): Validate MSI works with App Service containers
         const creds = this.clientId === undefined || this.clientId === "" ?
                     await msrestazure.loginWithAppServiceMSI({resource: "https://vault.azure.net"}) :
                     await msrestazure.loginWithServicePrincipalSecret(this.clientId, this.clientSecret, this.tenantId);

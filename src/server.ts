@@ -158,7 +158,7 @@ export async function getConfigValues(
 
     // if some secrets still don't exist, check env
     if (!cosmosDbKey) {
-        log.Trace("Setting cosmodDbKey from environment variable");
+        log.Trace("Setting cosmosDbKey from environment variable");
         cosmosDbKey = process.env.COSMOSDB_KEY;
     }
     if (!insightsKey) {

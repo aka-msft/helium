@@ -26,7 +26,7 @@ export class SystemController implements interfaces.Controller {
     /**
      * @swagger
      *
-     * /api/heathlz:
+     * /api/healthz:
      *   get:
      *     description: Tells external services if the service is running.
      *     tags:

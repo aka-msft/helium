@@ -19,10 +19,9 @@ export class MovieController implements interfaces.Controller {
     // Must be type Any so we can return the string in GET API calls.
     private static readonly movieDoesNotExistError: any = "A Movie with that ID does not exist";
 
-    constructor(
-        @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-        @inject("ITelemProvider") private telem: ITelemProvider,
-        @inject("ILoggingProvider") private logger: ILoggingProvider) {
+    constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
+                @inject("ITelemProvider") private telem: ITelemProvider,
+                @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
         this.logger = logger;
