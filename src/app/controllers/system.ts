@@ -1,7 +1,7 @@
 import { DocumentQuery } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces } from "inversify-restify-utils";
-import { httpStatus } from "../../config/constants";
+import * as HttpStatus from "http-status-codes";
 import { database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
@@ -54,7 +54,7 @@ export class SystemController implements interfaces.Controller {
         try {
             const results = await this.cosmosDb.queryCollections(database, querySpec);
         } catch (e) {
-            resCode = httpStatus.InternalServerError;
+            resCode = HttpStatus.INTERNAL_SERVER_ERROR;
             resMessage = "Application failed to reach database: " + e;
         }
 
