@@ -8,14 +8,12 @@ import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { Actor } from "../models/actor";
+import { actorDoesNotExistError } from "../../config/constants";
 
 // Controller implementation for our actors endpoint
 @Controller("/api/actors")
 @injectable()
 export class ActorController implements interfaces.Controller {
-
-    // Must be type Any so we can return the string in GET API calls.
-    private static readonly actorDoesNotExistError: any = "An Actor with that ID does not exist";
 
     // Instantiate the actor controller
     constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
@@ -141,7 +139,7 @@ export class ActorController implements interfaces.Controller {
         } catch (err) {
           if (err.toString().includes("NotFound")) {
             resCode = HttpStatus.NOT_FOUND;
-            result = ActorController.actorDoesNotExistError;
+            result = actorDoesNotExistError;
           } else {
             resCode = HttpStatus.INTERNAL_SERVER_ERROR;
             result = err.toString();

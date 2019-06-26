@@ -8,6 +8,7 @@ import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { DateUtilities } from "../../utilities/dateUtilities";
 import { Movie } from "../models/movie";
+import { movieDoesNotExistError } from "../../config/constants";
 
 /**
  * controller implementation for our movies endpoint
@@ -16,12 +17,10 @@ import { Movie } from "../models/movie";
 @injectable()
 export class MovieController implements interfaces.Controller {
 
-    // Must be type Any so we can return the string in GET API calls.
-    private static readonly movieDoesNotExistError: any = "A Movie with that ID does not exist";
-
-    constructor(@inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
-                @inject("ITelemProvider") private telem: ITelemProvider,
-                @inject("ILoggingProvider") private logger: ILoggingProvider) {
+    constructor(
+        @inject("IDatabaseProvider") private cosmosDb: IDatabaseProvider,
+        @inject("ITelemProvider") private telem: ITelemProvider,
+        @inject("ILoggingProvider") private logger: ILoggingProvider) {
         this.cosmosDb = cosmosDb;
         this.telem = telem;
         this.logger = logger;
@@ -141,7 +140,7 @@ export class MovieController implements interfaces.Controller {
         } catch (err) {
             if (err.toString().includes("NotFound")) {
                 resCode = HttpStatus.NOT_FOUND;
-                result = MovieController.movieDoesNotExistError;
+                result = movieDoesNotExistError;
             } else {
                 resCode = HttpStatus.INTERNAL_SERVER_ERROR;
                 result = err.toString();
@@ -335,7 +334,7 @@ export class MovieController implements interfaces.Controller {
         } catch (err) {
             if (err.toString().includes("NotFound")) {
                 resCode = HttpStatus.NOT_FOUND;
-                result = "A Movie with that ID does not exist";
+                result = movieDoesNotExistError;
             } else {
                 resCode = HttpStatus.INTERNAL_SERVER_ERROR;
                 result = err.toString();
