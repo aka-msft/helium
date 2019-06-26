@@ -58,21 +58,21 @@ export class AppInsightsProvider {
     }
 
     public getDependencyTrackingObject(
-        dtn: string,
-        n: string,
-        d: string,
-        rc: string,
-        s: boolean,
-        dur: number): DependencyTelemetry {
+        dependencyTypeNameParam: string,
+        nameParam: string,
+        dataParam: string,
+        resultCodeParam: string,
+        successParam: boolean,
+        durationParam: number): DependencyTelemetry {
 
         // Declare and initialize a DependencyTelemetry object for sending metrics to AppInsights
         const dependencyTelem: DependencyTelemetry = {
-            data: d,
-            dependencyTypeName: dtn,
-            duration: dur,
-            name: n,
-            resultCode: rc,
-            success: s,
+            dependencyTypeName: dependencyTypeNameParam,
+            name: nameParam,
+            data: dataParam,
+            resultCode: resultCodeParam,
+            success: successParam,
+            duration: durationParam,
         };
 
         // Return the DependencyTelemetry object

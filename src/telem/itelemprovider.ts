@@ -13,12 +13,12 @@ export interface ITelemProvider {
     trackMetric(metric: MetricTelemetry): void;
 
     getDependencyTrackingObject(
-        dtn: string,
-        n: string,
-        d: string,
-        rc: string,
-        s: boolean,
-        dur: number): DependencyTelemetry;
+        dependencyTypeName: string,
+        name: string,
+        data: string,
+        resultCode: string,
+        success: boolean,
+        duration: number): DependencyTelemetry;
 
     getMetricTelemetryObject(
         name: string,
