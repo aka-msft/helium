@@ -11,15 +11,15 @@ import { DateUtilities } from "../utilities/dateUtilities";
  */
 export default function responseDuration(container: Container) {
     // get the log and telem clients
-    const log = container.get<ILoggingProvider>("ILoggingProvider");
-    const telem = container.get<ITelemProvider>("ITelemProvider");
+    const log: ILoggingProvider = container.get<ILoggingProvider>("ILoggingProvider");
+    const telem: ITelemProvider = container.get<ITelemProvider>("ITelemProvider");
 
     // return a function with the correct middleware signature
     return function responseTime(req: restify.Request, res: restify.Response, next) {
         // start tracking time
-        const duration = DateUtilities.getTimer();
+        const duration: () => number = DateUtilities.getTimer();
         // create string unique to this action at this endpoint
-        const apiName = `${req.method} ${req.url}`;
+        const apiName: string = `${req.method} ${req.url}`;
         // log endpoint call start
         log.Trace("API Endpoint Called: " + apiName);
         telem.trackEvent(apiName);

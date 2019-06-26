@@ -19,8 +19,8 @@ export function IsEqualToProperty(
             target: object.constructor,
             validator: {
                 validate(value: any, args: ValidationArguments) {
-                    const [relatedPropertyName] = args.constraints; // object being validated
-                    const relatedValue = (args.object as any)[relatedPropertyName];
+                    const [relatedPropertyName]: any = args.constraints; // object being validated
+                    const relatedValue: any = (args.object as any)[relatedPropertyName];
                     return typeof value === typeof relatedValue
                         && value === (modifier !== undefined ? modifier(relatedValue) : relatedValue);
                 },

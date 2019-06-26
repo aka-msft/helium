@@ -81,7 +81,7 @@ export class ActorController implements interfaces.Controller {
         }
 
         // make query, catch errors
-        let resCode = HttpStatus.OK;
+        let resCode: number = HttpStatus.OK;
         let results: RetrievedDocument[];
         try {
             results = await this.cosmosDb.queryDocuments(
@@ -126,10 +126,10 @@ export class ActorController implements interfaces.Controller {
      */
     @Get("/:id")
     public async getActorById(req, res) {
-        const actorId = req.params.id;
+        const actorId: string = req.params.id;
 
         // make query, catch errors
-        let resCode = HttpStatus.OK;
+        let resCode: number = HttpStatus.OK;
         let result: RetrievedDocument;
         try {
           result = await this.cosmosDb.getDocument(database,

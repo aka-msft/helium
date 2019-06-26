@@ -88,6 +88,7 @@ export class AppInsightsProvider {
             name: metricname,
             value: metricvalue,
         };
+
         // Return the MetricTelemetry object
         return metricTelem;
     }

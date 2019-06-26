@@ -1,3 +1,3 @@
-export const database = "imdb";
-export const collection = "movies";
-export const defaultPartitionKey = "0";
+export const database: string = "imdb";
+export const collection: string = "movies";
+export const defaultPartitionKey: string = "0";

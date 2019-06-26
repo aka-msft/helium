@@ -43,8 +43,8 @@ export class SystemController implements interfaces.Controller {
      */
     @Get("/")
     public async healthcheck(req, res) {
-        let resCode = httpStatus.OK;
-        let resMessage = "Successfully reached healthcheck endpoint";
+        let resCode: number = httpStatus.OK;
+        let resMessage: string = "Successfully reached healthcheck endpoint";
 
         const querySpec: DocumentQuery = {
             parameters: [],

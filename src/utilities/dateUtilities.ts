@@ -8,7 +8,7 @@ export class DateUtilities {
     }
 
     public static getTimer() {
-        const start = Date.now();
+        const start: number = Date.now();
 
         return () => {
             return Date.now() - start;

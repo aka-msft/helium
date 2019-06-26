@@ -39,7 +39,7 @@ export class KeyVaultProvider {
             await this._initialize();
         }
         // An empty string for 'secretVersion' returns the latest version
-        const secret = await this.client.getSecret(this.url, name, "")
+        const secret: string = await this.client.getSecret(this.url, name, "")
             .then((s) =>  (s.value) as string)
             .catch((_) => {
                 this.logger.Error(Error(), "Unable to find secret " + name);
@@ -56,7 +56,7 @@ export class KeyVaultProvider {
     private async _initialize() {
 
         this.logger.Trace("Initializing KeyVault");
-        const creds = this.clientId === undefined || this.clientId === "" ?
+        const creds: any = this.clientId === undefined || this.clientId === "" ?
                     await msrestazure.loginWithAppServiceMSI({resource: "https://vault.azure.net"}) :
                     await msrestazure.loginWithServicePrincipalSecret(this.clientId, this.clientSecret, this.tenantId);
 

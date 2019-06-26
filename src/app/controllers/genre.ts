@@ -51,7 +51,7 @@ export class GenreController implements interfaces.Controller {
             query: "SELECT VALUE root.id FROM root where root.type = 'Genre'",
         };
 
-        let resCode = HttpStatus.OK;
+        let resCode: number = HttpStatus.OK;
         let results: RetrievedDocument[];
         try {
           results = await this.cosmosDb.queryDocuments(

@@ -20,12 +20,12 @@ import { DateUtilities } from "./utilities/dateUtilities";
 import EndpointLogger from "./middleware/EndpointLogger";
 
 (async () => {
-    const iocContainer = new Container();
+    const iocContainer: Container = new Container();
 
     iocContainer.bind<ILoggingProvider>("ILoggingProvider").to(BunyanLogger).inSingletonScope();
-    const log = iocContainer.get<ILoggingProvider>("ILoggingProvider");
+    const log: ILoggingProvider = iocContainer.get<ILoggingProvider>("ILoggingProvider");
 
-    const config = await getConfigValues(log);
+    const config: any = await getConfigValues(log);
 
     iocContainer.bind<interfaces.Controller>(TYPE.Controller).to(ActorController).whenTargetNamed("ActorController");
     iocContainer.bind<interfaces.Controller>(TYPE.Controller).to(GenreController).whenTargetNamed("GenreController");
@@ -38,9 +38,9 @@ import EndpointLogger from "./middleware/EndpointLogger";
     iocContainer.bind<string>("string").toConstantValue(config.insightsKey).whenTargetNamed("instrumentationKey");
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
 
-    const telem = iocContainer.get<ITelemProvider>("ITelemProvider");
+    const telem: ITelemProvider = iocContainer.get<ITelemProvider>("ITelemProvider");
 
-    const port = process.env.PORT || 3000;
+    const port: number = parseInt(process.env.PORT, 10) || 3000;
 
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
@@ -57,7 +57,7 @@ import EndpointLogger from "./middleware/EndpointLogger";
         app.use(restify.plugins.requestLogger());
         app.use(EndpointLogger(iocContainer));
 
-        const options = {
+        const options: any = {
             // Path to the API docs
             apis: [`${__dirname}/app/models/*.js`, `${__dirname}/app/controllers/*.js`],
             definition: {
@@ -70,7 +70,7 @@ import EndpointLogger from "./middleware/EndpointLogger";
         };
 
         // Initialize swagger-jsdoc -> returns validated swagger spec in json format
-        const swaggerSpec = swaggerJSDoc(options);
+        const swaggerSpec: any = swaggerJSDoc(options);
 
         log.Trace("Setting up swagger.json to serve statically");
         app.get("/swagger.json", (req, res) => {
@@ -115,21 +115,21 @@ export async function getConfigValues(
 
     // try to get KeyVault connection details from env
     // Whether or not we have clientId and clientSecret, we want to use KeyVault
-    const clientId = process.env.CLIENT_ID;
-    const clientSecret = process.env.CLIENT_SECRET;
+    const clientId: string = process.env.CLIENT_ID;
+    const clientSecret: string = process.env.CLIENT_SECRET;
 
     if (clientId && !clientSecret) {
         log.Trace("CLIENT_ID env var set, but not CLIENT_SECRET");
         process.exit(1);
     }
 
-    const tenantId = process.env.TENANT_ID;
+    const tenantId: string = process.env.TENANT_ID;
     if (!tenantId) {
         log.Trace("No TENANT_ID env var set");
         configFallback = true;
     }
 
-    const cosmosDbUrl = process.env.COSMOSDB_URL;
+    const cosmosDbUrl: string = process.env.COSMOSDB_URL;
     if (!cosmosDbUrl) {
         log.Trace("No COSMOSDB_URL env var set");
         process.exit(1);
@@ -137,10 +137,10 @@ export async function getConfigValues(
 
     // first try KeyVault, then env var
     if (!configFallback) {
-        const keyVaultUrl = process.env.KEY_VAULT_URL;
+        const keyVaultUrl: string = process.env.KEY_VAULT_URL;
 
         log.Trace("Trying to read from keyvault " + keyVaultUrl);
-        const keyvault = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId, log);
+        const keyvault: KeyVaultProvider = new KeyVaultProvider(keyVaultUrl, clientId, clientSecret, tenantId, log);
         try {
             cosmosDbKey = await keyvault.getSecret("cosmosDBkey");
             log.Trace("Got cosmosDBKey from keyvault");
@@ -183,7 +183,7 @@ export async function getConfigValues(
     };
 }
 
-const html = `<!DOCTYPE html>
+const html: string = `<!DOCTYPE html>
                 <html lang="en">
                 <head>
                     <meta charset="UTF-8">

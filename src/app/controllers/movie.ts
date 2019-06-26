@@ -83,7 +83,7 @@ export class MovieController implements interfaces.Controller {
             };
         }
 
-        let resCode = HttpStatus.OK;
+        let resCode: number = HttpStatus.OK;
         let results: RetrievedDocument[];
         try {
             results = await this.cosmosDb.queryDocuments(
@@ -128,9 +128,9 @@ export class MovieController implements interfaces.Controller {
      */
     @Get("/:id")
     public async getMovieById(req, res) {
-        const movieId = req.params.id;
+        const movieId: string = req.params.id;
 
-        let resCode = HttpStatus.OK;
+        let resCode: number = HttpStatus.OK;
         let result: RetrievedDocument;
         try {
             result = await this.cosmosDb.getDocument(database,
@@ -258,8 +258,7 @@ export class MovieController implements interfaces.Controller {
      */
     @Put("/:id")
     public async updateMovie(req, res) {
-        const movieId = req.params.id;
-
+        const movieId: string = req.params.id;
         const movie: Movie = Object.assign(Object.create(Movie.prototype),
             JSON.parse(JSON.stringify(req.body)));
 
@@ -318,10 +317,10 @@ export class MovieController implements interfaces.Controller {
      */
     @Delete("/:id")
     public async deleteMovieById(req, res) {
-        const movieId = req.params.id;
+        const movieId: string = req.params.id;
 
         // movieId isn't the partition key, so any search on it will require a cross-partition query.
-        let resCode = HttpStatus.NO_CONTENT;
+        let resCode: number = HttpStatus.NO_CONTENT;
         let result: string;
         try {
             await this.cosmosDb.deleteDocument(
