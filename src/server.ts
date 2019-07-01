@@ -63,11 +63,32 @@ import EndpointLogger from "./middleware/EndpointLogger";
     try {
     // listen for requests
     server.setConfig((app) => {
-        // parse requests of content-type - application/x-www-form-urlencoded
+        /**
+         * Parse requests of content-type - application/x-www-form-urlencoded
+         */
         app.use(bodyParser.urlencoded({ extended: true }));
+
+        /**
+         * Parses HTTP query string and makes it available in req.query.
+         * Setting mapParams to false prevents additional params in query to be merged in req.Params
+         */
         app.use(restify.plugins.queryParser({ mapParams: false }));
+
+        /**
+         * Set Content-Type as json for reading and parsing the HTTP request body
+         */
+
         app.use(bodyParser.json());
+
+        /**
+         * Configure the requestlogger plugin to use Bunyan for correlating child loggers
+         */
         app.use(restify.plugins.requestLogger());
+
+        /**
+         * Configure middleware function to be called for every endpoint.
+         * This function logs the endpoint being called and measures duration taken for the call.
+         */
         app.use(EndpointLogger(iocContainer));
 
         const options: any = {
