@@ -326,6 +326,14 @@ $ az webapp config appsettings set --resource-group {app_prefix}helium --name {p
 $ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings CLIENT_ID={service principal appId}
 ```
 
+Note: Database environment variables are automatically set to defaults for the MovieInfo reference app, unless otherwise specified:
+
+```bash
+$ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings DB_NAME={database name}
+$ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings DB_COLLECTION={database collection}
+$ az webapp config appsettings set --resource-group {app_prefix}helium --name {prefix}helium --settings DEFAULT_PARTITION_KEY={default partition key}
+```
+
 3. Configuration via the Azure Portal is needed. Open the [Azure Portal](https://portal.azure.com) and perform the following actions:
   - Go to your resource group _{app_prefix}helium_
   - Go to your web application _{app_prefix}helium_
