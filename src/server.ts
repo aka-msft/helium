@@ -18,6 +18,9 @@ import { AppInsightsProvider } from "./telem/appinsightsprovider";
 import { ITelemProvider } from "./telem/itelemprovider";
 import { DateUtilities } from "./utilities/dateUtilities";
 import EndpointLogger from "./middleware/EndpointLogger";
+import { BearerStrategy } from "passport-azure-ad";
+import * as passport from "passport";
+import { authcreds } from "./config/authcreds";
 
 (async () => {
     /**
@@ -53,6 +56,52 @@ import EndpointLogger from "./middleware/EndpointLogger";
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
     const telem: ITelemProvider = iocContainer.get<ITelemProvider>("ITelemProvider");
 
+    // Auth
+
+    var options = {
+        identityMetadata: authcreds.identityMetadata, // Required
+        clientID: authcreds.clientID, // Required
+        //validateIssuer: authcreds.validateIssuer, // Conditional
+        issuer: config.creds.issuer, // Conditional
+        passReqToCallback: authcreds.passReqToCallback, // Required
+        //isB2C: authcreds.isB2C, // Conditional
+        //policyName: authcreds.policyName, // Conditional
+        //allowMultiAudiencesInToken: authcreds.allowMultiAudiencesInToken, // Conditional
+        audience: authcreds.audience, // Optional
+        loggingLevel: authcreds.loggingLevel, // Optional
+        //loggingNoPII: authcreds.loggingNoPII, // Optional
+        //clockSkew: authcreds.clockSkew, // Optional
+        //scope: authcreds.scope // Optional
+        };
+        
+        var bearerStrategy = new BearerStrategy(options, function(token, done) {
+            log.Trace(token, "was the token retrieved");
+            done(null, {}, token);
+        });
+
+    // Sample from: http://www.passportjs.org/packages/passport-azure-ad/
+    // Getting some red squigglies
+    //   var bearerStrategy = new BearerStrategy(options,
+    //     function(token, done) {
+    //       log.Trace('verifying the user');
+    //       log.Trace(token, 'was the token retreived');
+    //       findById(token.oid, function(err, user) {
+    //         if (err) {
+    //           return done(err);
+    //         }
+    //         if (!user) {
+    //           // "Auto-registration"
+    //           log.info('User was added automatically as they were new. Their oid is: ', token.oid);
+    //           users.push(token);
+    //           owner = token.oid;
+    //           return done(null, token);
+    //         }
+    //         owner = token.oid;
+    //         return done(null, user, token);
+    //       });
+    //     }
+    //   );
+
     const port: number = parseInt(process.env.PORT, 10) || 3000;
 
     // create restify server
@@ -69,6 +118,18 @@ import EndpointLogger from "./middleware/EndpointLogger";
         app.use(bodyParser.json());
         app.use(restify.plugins.requestLogger());
         app.use(EndpointLogger(iocContainer));
+        app.use(passport.initialize());
+        passport.use(bearerStrategy);
+
+        // Enable CORS for * because this is a demo project
+        app.use(function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header(
+                "Access-Control-Allow-Headers",
+                "Authorization, Origin, X-Requested-With, Content-Type, Accept"
+            );
+            next();
+        });
 
         const options: any = {
             // Path to the API docs
@@ -92,7 +153,12 @@ import EndpointLogger from "./middleware/EndpointLogger";
         });
 
         log.Trace("Setting up index.html to serve static");
-        app.get("/", (req, res) => {
+        app.get("/",
+        function(req, res) {
+            var claims = req.authInfo;
+            console.log("User info: ", req.user);
+            console.log("Validated claims: ", claims);
+
             res.writeHead(200, {
                 "Content-Length": Buffer.byteLength(html),
                 "Content-Type": "text/html",

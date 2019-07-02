@@ -9,6 +9,7 @@ import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { Actor } from "../models/actor";
 import { actorDoesNotExistError } from "../../config/constants";
+import * as passport from "passport";
 
 // Controller implementation for our actors endpoint
 @Controller("/api/actors")
@@ -50,7 +51,16 @@ export class ActorController implements interfaces.Controller {
      *       default:
      *         description: Unexpected error
      */
-    @Get("/")
+    @Get("/",
+        passport.authenticate("oauth-bearer", { session: false }),
+        function(req, res) {
+            var claims = req.authInfo;
+            console.log("User info: ", req.user);
+            console.log("Validated claims: ", claims);
+            res.status(200).json({ name: claims["name"] });
+        }
+    )
+  
     public async getAll(req: Request, res) {
         let querySpec: DocumentQuery;
 
