@@ -54,8 +54,6 @@ import { html } from "./swagger-html";
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
     const telem: ITelemProvider = iocContainer.get<ITelemProvider>("ITelemProvider");
 
-    const port: number = parseInt(process.env.PORT, 10) || 3000;
-
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
 
@@ -127,9 +125,9 @@ import { html } from "./swagger-html";
         app.get("/node_modules/swagger-ui-dist/*", restify.plugins.serveStatic({
             directory: __dirname + "/..",
         }));
-    }).build().listen(port, () => {
-        log.Trace("Server is listening on port " + port);
-        telem.trackEvent("API Server: Server started on port " + port);
+    }).build().listen(config.port, () => {
+        log.Trace("Server is listening on port " + config.port);
+        telem.trackEvent("API Server: Server started on port " + config.port);
     });
 
     } catch (err) {

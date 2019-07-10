@@ -3,7 +3,10 @@ import { KeyVaultProvider } from "../secrets/keyvaultprovider";
 
 // Gets configuration details needed to connect to KeyVault, CosmosDB, and AppInsights.
 export async function getConfigValues(
-    log: ILoggingProvider): Promise<{ cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string }> {
+    log: ILoggingProvider): Promise<{ port: number, cosmosDbKey: string, cosmosDbUrl: string, insightsKey: string }> {
+    // port comes from env var or default value if not set
+    let port: number;
+    const PORT_DEFAULT: number = 3000;
     // cosmosDbKey comes from KeyVault or env var
     let cosmosDbKey: string;
     // insightsKey comes from KeyVault or env var
@@ -12,6 +15,15 @@ export async function getConfigValues(
     let configFallback: boolean;
 
     log.Trace("Getting configuration values");
+
+    // Try to get port from environment variable
+    // If not set, use PORT_DEFAULT const defined above
+    port = parseInt(process.env.PORT, 10);
+
+    if (!port) {
+        log.Trace("No PORT environment variable set, setting to default of '3000'.");
+        port = PORT_DEFAULT;
+    }
 
     // try to get KeyVault connection details from env
     // Whether or not we have clientId and clientSecret, we want to use KeyVault
@@ -77,6 +89,7 @@ export async function getConfigValues(
     }
     log.Trace("Returning config values");
     return {
+        port,
         cosmosDbKey,
         cosmosDbUrl,
         insightsKey,
