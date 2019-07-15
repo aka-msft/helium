@@ -2,11 +2,11 @@ import { DocumentQuery } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces } from "inversify-restify-utils";
 import * as HttpStatus from "http-status-codes";
-import { database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { DateUtilities } from "../../utilities/dateUtilities";
+import { getDbConfigValues } from "../../config/dbconfig";
 
 /**
  * controller implementation for our system endpoint
@@ -22,6 +22,9 @@ export class SystemController implements interfaces.Controller {
         this.telem = telem;
         this.logger = logger;
     }
+
+    // Get database config
+    private dbconfig: any = getDbConfigValues(this.logger);
 
     /**
      * @swagger
@@ -52,7 +55,7 @@ export class SystemController implements interfaces.Controller {
         };
 
         try {
-            const results = await this.cosmosDb.queryCollections(database, querySpec);
+            const results = await this.cosmosDb.queryCollections(this.dbconfig.database, querySpec);
         } catch (e) {
             resCode = HttpStatus.INTERNAL_SERVER_ERROR;
             resMessage = "Application failed to reach database: " + e;

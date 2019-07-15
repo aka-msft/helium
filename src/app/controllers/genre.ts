@@ -3,11 +3,11 @@ import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces } from "inversify-restify-utils";
 import { Request } from "restify";
 import * as HttpStatus from "http-status-codes";
-import { collection, database } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { DateUtilities } from "../../utilities/dateUtilities";
+import { getDbConfigValues } from "../../config/dbconfig";
 
 /**
  * controller implementation for our genres endpoint
@@ -23,6 +23,9 @@ export class GenreController implements interfaces.Controller {
         this.telem = telem;
         this.logger = logger;
     }
+
+    // Get database config
+    private dbconfig: any = getDbConfigValues(this.logger);
 
     /**
      * @swagger
@@ -55,8 +58,8 @@ export class GenreController implements interfaces.Controller {
         let results: RetrievedDocument[];
         try {
           results = await this.cosmosDb.queryDocuments(
-            database,
-            collection,
+            this.dbconfig.database,
+            this.dbconfig.collection,
             querySpec,
             { enableCrossPartitionQuery: true },
           );

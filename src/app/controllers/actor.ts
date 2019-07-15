@@ -3,11 +3,11 @@ import { inject, injectable } from "inversify";
 import { Controller, Get, interfaces, Post } from "inversify-restify-utils";
 import { Request } from "restify";
 import * as HttpStatus from "http-status-codes";
-import { collection, database, defaultPartitionKey} from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { Actor } from "../models/actor";
+import { getDbConfigValues } from "../../config/dbconfig";
 import { actorDoesNotExistError } from "../../config/constants";
 import * as passport from "passport";
 
@@ -24,6 +24,9 @@ export class ActorController implements interfaces.Controller {
         this.telem = telem;
         this.logger = logger;
     }
+
+    // Get database config
+    private dbconfig: any = getDbConfigValues(this.logger);
 
     /**
      * @swagger
@@ -62,6 +65,7 @@ export class ActorController implements interfaces.Controller {
     )
   
     public async getAll(req: Request, res) {
+
         let querySpec: DocumentQuery;
 
         // Actor name is an optional query param.
@@ -95,8 +99,8 @@ export class ActorController implements interfaces.Controller {
         let results: RetrievedDocument[];
         try {
             results = await this.cosmosDb.queryDocuments(
-                database,
-                collection,
+                this.dbconfig.database,
+                this.dbconfig.collection,
                 querySpec,
                 { enableCrossPartitionQuery: true },
             );
@@ -136,15 +140,16 @@ export class ActorController implements interfaces.Controller {
      */
     @Get("/:id")
     public async getActorById(req, res) {
+
         const actorId: string = req.params.id;
 
         // make query, catch errors
         let resCode: number = HttpStatus.OK;
         let result: RetrievedDocument;
         try {
-          result = await this.cosmosDb.getDocument(database,
-            collection,
-            defaultPartitionKey,
+          result = await this.cosmosDb.getDocument(this.dbconfig.database,
+            this.dbconfig.collection,
+            this.dbconfig.defaultPartitionKey,
             actorId);
         } catch (err) {
           if (err.toString().includes("NotFound")) {
@@ -214,8 +219,8 @@ export class ActorController implements interfaces.Controller {
         let result: RetrievedDocument;
         try {
             result = await this.cosmosDb.upsertDocument(
-                database,
-                collection,
+                this.dbconfig.database,
+                this.dbconfig.collection,
                 req.body,
             );
         } catch (err) {

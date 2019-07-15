@@ -2,12 +2,12 @@ import { DocumentQuery, RetrievedDocument } from "documentdb";
 import { inject, injectable } from "inversify";
 import { Controller, Delete, Get, interfaces, Post, Put } from "inversify-restify-utils";
 import * as HttpStatus from "http-status-codes";
-import { collection, database, defaultPartitionKey } from "../../db/dbconstants";
 import { IDatabaseProvider } from "../../db/idatabaseprovider";
 import { ILoggingProvider } from "../../logging/iLoggingProvider";
 import { ITelemProvider } from "../../telem/itelemprovider";
 import { DateUtilities } from "../../utilities/dateUtilities";
 import { Movie } from "../models/movie";
+import { getDbConfigValues } from "../../config/dbconfig";
 import { movieDoesNotExistError } from "../../config/constants";
 
 /**
@@ -27,6 +27,9 @@ export class MovieController implements interfaces.Controller {
         this.telem = telem;
         this.logger = logger;
     }
+
+    // Get database config
+    private dbconfig: any = getDbConfigValues(this.logger);
 
     /**
      * @swagger
@@ -89,8 +92,8 @@ export class MovieController implements interfaces.Controller {
         let results: RetrievedDocument[];
         try {
             results = await this.cosmosDb.queryDocuments(
-                database,
-                collection,
+                this.dbconfig.database,
+                this.dbconfig.collection,
                 querySpec,
                 { enableCrossPartitionQuery: true },
             );
@@ -135,9 +138,9 @@ export class MovieController implements interfaces.Controller {
         let resCode: number = HttpStatus.OK;
         let result: RetrievedDocument;
         try {
-            result = await this.cosmosDb.getDocument(database,
-                collection,
-                defaultPartitionKey,
+            result = await this.cosmosDb.getDocument(this.dbconfig.database,
+                this.dbconfig.collection,
+                this.dbconfig.defaultPartitionKey,
                 movieId);
         } catch (err) {
             if (err.toString().includes("NotFound")) {
@@ -207,8 +210,8 @@ export class MovieController implements interfaces.Controller {
         let result: RetrievedDocument;
         try {
             result = await this.cosmosDb.upsertDocument(
-                database,
-                collection,
+                this.dbconfig.database,
+                this.dbconfig.collection,
                 req.body,
             );
         } catch (err) {
@@ -284,8 +287,8 @@ export class MovieController implements interfaces.Controller {
         let result: RetrievedDocument;
         try {
             result = await this.cosmosDb.upsertDocument(
-                database,
-                collection,
+                this.dbconfig.database,
+                this.dbconfig.collection,
                 movie,
             );
         } catch (err) {
@@ -326,9 +329,9 @@ export class MovieController implements interfaces.Controller {
         let result: string;
         try {
             await this.cosmosDb.deleteDocument(
-                database,
-                collection,
-                defaultPartitionKey,
+                this.dbconfig.database,
+                this.dbconfig.collection,
+                this.dbconfig.defaultPartitionKey,
                 movieId,
             );
             return res.send(resCode);
