@@ -57,10 +57,11 @@ export class ActorController implements interfaces.Controller {
     @Get("/",
         passport.authenticate("oauth-bearer", { session: false }),
         function(req, res) {
-            var claims = req.authInfo;
-            console.log("User info: ", req.user);
+            var claims = req.authorization;
+            console.log("User info: ", req.authorization.basic.username);
             console.log("Validated claims: ", claims);
-            res.status(200).json({ name: claims["name"] });
+            res.status(200);
+            res.send({ name: claims["name"] });
         }
     )
   

@@ -142,6 +142,7 @@ import { html } from "./swagger-html";
         app.use(EndpointLogger(iocContainer));
         app.use(passport.initialize());
         passport.use(bearerStrategy);
+        app.use(restify.plugins.authorizationParser());
 
         // Enable CORS for * because this is a demo project
         app.use(function(req, res, next) {
@@ -177,8 +178,8 @@ import { html } from "./swagger-html";
         log.Trace("Setting up index.html to serve static");
         app.get("/",
         function(req, res) {
-            var claims = req.authInfo;
-            console.log("User info: ", req.user);
+            var claims = req.authorization;
+            console.log("User info: ", req.authorization.basic.username);
             console.log("Validated claims: ", claims);
 
             res.writeHead(200, {
