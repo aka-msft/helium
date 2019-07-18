@@ -10,6 +10,7 @@
       "ordered-imports": false,
       "quotemark": [true, "double"],
       "no-console": false,
+      "only-arrow-functions": false,
       "variable-name": [true, "allow-leading-underscore", "allow-pascal-case"]
     }
   }
