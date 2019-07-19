@@ -15,8 +15,10 @@ import { BunyanLogger } from "./logging/bunyanLogProvider";
 import { ILoggingProvider } from "./logging/iLoggingProvider";
 import { AppInsightsProvider } from "./telem/appinsightsprovider";
 import { ITelemProvider } from "./telem/itelemprovider";
-// import { DateUtilities } from "./utilities/dateUtilities";
 import EndpointLogger from "./middleware/EndpointLogger";
+import Auth from "./middleware/Authorization";
+import * as passport from "passport";
+import { BearerStrategy } from "passport-azure-ad";
 import { getConfigValues } from "./config/config";
 import { html } from "./swagger-html";
 
@@ -54,6 +56,23 @@ import { html } from "./swagger-html";
     iocContainer.bind<ITelemProvider>("ITelemProvider").to(AppInsightsProvider).inSingletonScope();
     const telem: ITelemProvider = iocContainer.get<ITelemProvider>("ITelemProvider");
 
+    // TODO: Figure out how to import these without breaking the server
+    var tenantID = "" ; // guid
+    var clientID = "" ; // guid
+    var audience = "" ; // example "https://<tenantname>.onmicrosoft.com/server"
+
+    var authOptions =  {
+        identityMetadata: "https://login.microsoftonline.com/" + tenantID + "/v2.0/.well-known/openid-configuration",
+        clientID: clientID,
+        issuer: "https://sts.windows.net/" + tenantID + "/",
+        audience: audience,
+        loggingLevel: "info",
+        passReqToCallback: false
+    };
+
+var bearerStrategy = new BearerStrategy(authOptions, function(token, done) {
+  done(null, {}, token);
+
     // create restify server
     const server = new InversifyRestifyServer(iocContainer);
 
@@ -90,6 +109,30 @@ import { html } from "./swagger-html";
          */
         app.use(EndpointLogger(iocContainer));
 
+        /**
+         * Authentication block.
+         */
+        app.use(passport.initialize());
+        passport.use(bearerStrategy);
+        app.use(restify.plugins.authorizationParser());
+
+        // Enable CORS for * because this is a demo project
+        // TODO: Consider making CORS into a separate middleware
+        app.use(function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header(
+            "Access-Control-Allow-Headers",
+            "Authorization, Origin, X-Requested-With, Content-Type, Accept"
+            );
+            next();
+        });
+
+        /**
+         * Configure middleware function to be called for every endpoint.
+         * This function performs authorization based on the user's groups.
+         */
+        app.use(Auth(iocContainer));
+
         const options: any = {
             // Path to the API docs
             apis: [`${__dirname}/app/models/*.js`, `${__dirname}/app/controllers/*.js`],
@@ -106,10 +149,12 @@ import { html } from "./swagger-html";
         const swaggerSpec: any = swaggerJSDoc(options);
 
         log.Trace("Setting up swagger.json to serve statically");
-        app.get("/swagger.json", (req, res) => {
-            res.setHeader("Content-Type", "application/json");
-            res.send(swaggerSpec);
-        });
+        app.get("/swagger.json",
+            passport.authenticate("oauth-bearer", { session: false }),
+            (req, res) => {
+                res.setHeader("Content-Type", "application/json");
+                res.send(swaggerSpec);
+            });
 
         log.Trace("Setting up index.html to serve static");
         app.get("/", (req, res) => {
